@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🦋 bsky.md — Bluesky as Markdown
 
-## Getting Started
+**Live: https://bsky-md.vercel.app**
 
-First, run the development server:
+Fetch any public Bluesky content as clean, portable Markdown. No auth, no API key, just a URL.
+
+## Endpoints
+
+| Route | Description |
+|-------|-------------|
+| `GET /profile/:handle` | Bio, stats, avatar/banner |
+| `GET /profile/:handle/posts` | Paginated posts feed |
+| `GET /profile/:handle/post/:rkey` | Single post with embeds |
+| `GET /profile/:handle/post/:rkey/thread` | Full self-reply thread |
+| `GET /profile/:handle/feed/:rkey` | Public custom feed |
+| `GET /profile/:handle/likes` | Posts the user liked |
+| `GET /profile/:handle/followers` | Follower list |
+| `GET /profile/:handle/following` | Following list |
+| `GET /search?q=:query` | Full-text post search |
+| `GET /trending` | Trending topics right now |
+| `GET /llms.txt` | Machine-readable API guide for agents |
+
+## Features
+
+- Rich text facets → Markdown links (mentions, URLs, hashtags)
+- Image embeds with alt text + full CDN URLs
+- Video embeds (thumbnail + HLS link)
+- External link cards (title, description, thumbnail)
+- Quote posts rendered as blockquotes
+- Custom feeds (What's Hot, etc.)
+- Trending topics
+- Pagination cursors on all list endpoints
+- `Content-Type: text/markdown`, open CORS, edge-cached
+
+## Usage
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Profile
+curl https://bsky-md.vercel.app/profile/bsky.app
+
+# Posts
+curl https://bsky-md.vercel.app/profile/bsky.app/posts
+
+# What's Hot feed
+curl https://bsky-md.vercel.app/profile/bsky.app/feed/whats-hot
+
+# Search
+curl "https://bsky-md.vercel.app/search?q=atproto"
+
+# Trending
+curl https://bsky-md.vercel.app/trending
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## For LLMs
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+See [`/llms.txt`](https://bsky-md.vercel.app/llms.txt) for a machine-readable guide to every endpoint.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Stack
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js 16 · TypeScript · `@atproto/api` · Deployed on Vercel

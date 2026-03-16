@@ -189,13 +189,12 @@ export default function Home() {
       <header className={s.header}>
         <div className={s.nav}>
           <a href="/" className={s.logo}>
-            <img src="/icon.svg" alt="" className={s.logoIcon} />
-            bsky.md
+            🦋 bsky.md
           </a>
           <nav className={s.navLinks}>
             <a href="/trending">Trending</a>
             <a href="/llms.txt">llms.txt</a>
-            <a href="https://tangled.org/did:plc:4hawmtgzjx3vclfyphbhfn7v/bsky-md" target="_blank" rel="noopener noreferrer">
+            <a href="https://tangled.org/j4ck.xyz/bsky-md" target="_blank" rel="noopener noreferrer">
               Source
             </a>
           </nav>
@@ -341,7 +340,7 @@ export default function Home() {
           <a href="/llms.txt">llms.txt</a>
           <a href="/docs">API Docs</a>
           <a href="/search?q=atproto">Search</a>
-          <a href="https://tangled.org/did:plc:4hawmtgzjx3vclfyphbhfn7v/bsky-md" target="_blank" rel="noopener noreferrer">
+          <a href="https://tangled.org/j4ck.xyz/bsky-md" target="_blank" rel="noopener noreferrer">
             Source on Tangled
           </a>
         </div>
