@@ -11,10 +11,18 @@ import type {
 
 // ─── Client ──────────────────────────────────────────────────────────────────
 
-const agent = new AtpAgent({ service: 'https://public.api.bsky.app' })
+// Wrap fetch with an 8-second timeout so a slow/hung Bluesky API call
+// can't tie up a Vercel function slot until the hard 10s limit kills it.
+function fetchWithTimeout(url: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 8_000)
+  return fetch(url, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer))
+}
+
+const agent = new AtpAgent({ service: 'https://public.api.bsky.app', fetch: fetchWithTimeout })
 
 // Search requires the full api.bsky.app (public.api.bsky.app blocks it)
-const searchAgent = new AtpAgent({ service: 'https://api.bsky.app' })
+const searchAgent = new AtpAgent({ service: 'https://api.bsky.app', fetch: fetchWithTimeout })
 
 /** Simple in-memory cache for handle → DID resolution within a process lifetime. */
 const didCache = new Map<string, string>()
@@ -288,7 +296,7 @@ export async function getCustomFeed(
 }
 
 export async function getTrending(): Promise<TrendingData> {
-  const res = await fetch(
+  const res = await fetchWithTimeout(
     'https://public.api.bsky.app/xrpc/app.bsky.unspecced.getTrendingTopics',
     { next: { revalidate: 60 } } as RequestInit,
   )

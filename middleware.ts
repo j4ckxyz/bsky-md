@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // sufficient to cap runaway single-IP abuse and protect Bluesky's API.
 // ---------------------------------------------------------------------------
 const WINDOW_MS = 60_000 // 1 minute
-const MAX_REQUESTS = 20  // per IP per window
+const MAX_REQUESTS = 10  // per IP per window
 
 const ipWindows = new Map<string, number[]>()
 
