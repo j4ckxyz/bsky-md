@@ -49,7 +49,8 @@ export function baseUrl(req: Request): string {
 
 /**
  * Wrap a route handler with consistent error handling.
- * Maps Bluesky API 400 "not found" errors to HTTP 404.
+ * Maps Bluesky API errors to appropriate HTTP responses.
+ * Auth-required accounts get a friendly markdown notice instead of a raw error.
  */
 export async function handleRoute(
   fn: () => Promise<Response>,
@@ -59,10 +60,35 @@ export async function handleRoute(
   } catch (err: unknown) {
     const e = err as { message?: string; status?: number; error?: string }
     const message = e?.message ?? 'An unexpected error occurred'
+    let status = e?.status ?? 500
+
+    // Account requires sign-in — return a helpful markdown notice
+    if (
+      status === 401 ||
+      e?.error === 'AuthRequired' ||
+      /auth(entication)? required/i.test(message)
+    ) {
+      const body = `# 🔒 Sign-in required
+
+This Bluesky account has enabled **"Require sign-in to view"** in their privacy settings.
+
+bsky.md only has access to public content and cannot fetch posts from accounts that require authentication.
+
+You can view their profile directly on Bluesky:
+https://bsky.app
+
+> **Note:** This is a privacy choice made by the account holder, not an error with bsky.md.
+`
+      return new Response(body, {
+        status: 403,
+        headers: {
+          'Content-Type': 'text/markdown; charset=utf-8',
+          ...CORS_HEADERS,
+        },
+      })
+    }
 
     // Bluesky returns 400 InvalidRequest for most "not found" cases.
-    // Map those to 404 so clients can distinguish missing resources from bad requests.
-    let status = e?.status ?? 500
     if (
       status === 400 &&
       (e?.error === 'InvalidRequest' || e?.error === 'NotFound') &&

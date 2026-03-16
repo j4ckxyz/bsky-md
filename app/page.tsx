@@ -72,7 +72,7 @@ function fmtBytes(n: number): string {
 
 const ENDPOINTS = [
   { path: '/profile/:handle',            desc: 'Bio, stats, avatar/banner',    example: '/profile/bsky.app' },
-  { path: '/profile/:handle/posts',      desc: 'Paginated original posts',      example: '/profile/bsky.app/posts' },
+  { path: '/profile/:handle/posts',      desc: 'Recent posts (paginated)',      example: '/profile/bsky.app/posts' },
   { path: '/profile/:handle/post/:rkey', desc: 'Single post with embeds',       example: '/profile/bsky.app/post/3lhreomsy5k2x' },
   { path: '/…/post/:rkey/thread',        desc: 'Full self-reply thread',        example: '/profile/bsky.app/post/3lhreomsy5k2x/thread' },
   { path: '/profile/:handle/feed/:rkey', desc: 'Public custom feed',            example: '/profile/bsky.app/feed/whats-hot' },
@@ -351,7 +351,7 @@ export default function Home() {
             'curl https://bsky-md.vercel.app/profile/j4ck.xyz',
             '',
             '# Recent posts',
-            'curl https://bsky-md.vercel.app/profile/jcsalterego.bsky.social/feed',
+            'curl https://bsky-md.vercel.app/profile/mackuba.eu/posts',
             '',
             '# Followers',
             'curl https://bsky-md.vercel.app/profile/j4ck.xyz/followers',

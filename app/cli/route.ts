@@ -20,8 +20,8 @@ No auth. No API key. Just HTTP.
 ## Quick start
 
   curl ${base}/profile/j4ck.xyz
-  curl ${base}/profile/jcsalterego.bsky.social
-  curl ${base}/profile/jcsalterego.bsky.social/feed
+  curl ${base}/profile/mackuba.eu
+  curl ${base}/profile/mackuba.eu/posts
   curl ${base}/profile/j4ck.xyz/followers
   curl "${base}/search?q=atproto"
   curl ${base}/trending
@@ -30,38 +30,42 @@ No auth. No API key. Just HTTP.
 
 ## Endpoints
 
-  /profile/:handle                 Bio, stats, pinned post
-  /profile/:handle/feed            Recent posts (paginated)
-  /profile/:handle/post/:rkey      Single post with embeds
+  /profile/:handle                    Bio, stats, pinned post
+  /profile/:handle/posts              Recent posts (paginated)
+  /profile/:handle/post/:rkey         Single post with embeds
   /profile/:handle/post/:rkey/thread  Full thread
-  /profile/:handle/feed/:rkey      Public custom feed
-  /profile/:handle/likes           Posts the user liked
-  /profile/:handle/followers       Follower list
-  /profile/:handle/following       Following list
-  /search?q=:query                 Full-text post search
-  /trending                        Trending topics right now
-  /llms.txt                        Machine-readable API guide (for agents)
-  /skill.md                        Agent skill file (Claude, Cursor, Windsurf…)
+  /profile/:handle/feed/:rkey         Public custom feed
+  /profile/:handle/likes              Posts the user liked
+  /profile/:handle/followers          Follower list
+  /profile/:handle/following          Following list
+  /search?q=:query                    Full-text post search
+  /trending                           Trending topics right now
+  /llms.txt                           Machine-readable API guide (for agents)
+  /skill.md                           Agent skill file (Claude, Cursor, Windsurf…)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ## More examples
 
-  # A specific post
-  curl ${base}/profile/j4ck.xyz/post/$(echo "find a rkey at bsky.app/profile/j4ck.xyz")
-
   # Thread
-  curl ${base}/profile/jcsalterego.bsky.social/post/<rkey>/thread
+  curl ${base}/profile/mackuba.eu/post/<rkey>/thread
 
   # Custom feed
   curl ${base}/profile/bsky.app/feed/whats-hot
 
   # Pagination
-  curl "${base}/profile/jcsalterego.bsky.social/feed?limit=5"
+  curl "${base}/profile/mackuba.eu/posts?limit=5"
 
   # Search
   curl "${base}/search?q=%23rust+lang"
   curl "${base}/search?q=open+source"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## Note on private accounts
+
+Some Bluesky users require sign-in to view their content.
+bsky.md only has access to public content — those accounts will return a clear notice.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
