@@ -5,8 +5,14 @@ const CORS_HEADERS = {
   'Access-Control-Max-Age': '86400',
 }
 
+// Default: profiles, lists, search — fresh for 2 min, stale-serve for 1 hr
 const CACHE_HEADERS = {
-  'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+  'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=3600',
+}
+
+// Posts and threads are immutable — cache aggressively
+const IMMUTABLE_CACHE_HEADERS = {
+  'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
 }
 
 export function markdownResponse(body: string, status = 200): Response {
@@ -17,6 +23,18 @@ export function markdownResponse(body: string, status = 200): Response {
       Vary: 'Accept',
       ...CORS_HEADERS,
       ...CACHE_HEADERS,
+    },
+  })
+}
+
+export function immutableMarkdownResponse(body: string): Response {
+  return new Response(body, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/markdown; charset=utf-8',
+      Vary: 'Accept',
+      ...CORS_HEADERS,
+      ...IMMUTABLE_CACHE_HEADERS,
     },
   })
 }

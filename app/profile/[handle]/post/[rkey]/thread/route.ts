@@ -1,7 +1,7 @@
 import { type NextRequest } from 'next/server'
 import { getThread } from '@/lib/bsky'
 import { renderThread } from '@/lib/markdown'
-import { markdownResponse, optionsResponse, baseUrl, handleRoute } from '@/lib/respond'
+import { immutableMarkdownResponse, optionsResponse, baseUrl, handleRoute } from '@/lib/respond'
 
 export async function GET(
   req: NextRequest,
@@ -11,7 +11,7 @@ export async function GET(
     const { handle, rkey } = await params
     const thread = await getThread(handle, rkey)
     const md = renderThread(thread, baseUrl(req))
-    return markdownResponse(md)
+    return immutableMarkdownResponse(md)
   })
 }
 
