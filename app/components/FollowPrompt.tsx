@@ -48,7 +48,7 @@ export default function FollowPrompt() {
 
   if (!visible) return null
 
-  const displayName = profile?.displayName || 'j4ck.xyz'
+  const displayName = profile?.displayName || 'jack'
   const handle = profile?.handle || 'j4ck.xyz'
 
   return (
@@ -71,7 +71,7 @@ export default function FollowPrompt() {
         </div>
 
         <p className={s.label}>
-          Built by j4ck — follow to hear about updates and new tools.
+          Built by jack — follow to hear about updates and new tools.
         </p>
 
         <a

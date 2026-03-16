@@ -495,6 +495,72 @@
   flex-shrink: 0;
 }
 
+/* ── Terminal Section ─────────────────────────────── */
+.terminalSection {
+  max-width: 900px;
+  width: 100%;
+  margin: 48px auto 0;
+  padding: 0 24px;
+}
+
+.terminalSubtitle {
+  font-size: 0.85rem;
+  color: var(--text-2);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.terminalBlock {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #0d1117;
+}
+
+@media (prefers-color-scheme: light) {
+  .terminalBlock {
+    background: #1a1f27;
+  }
+}
+
+.terminalBar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.terminalDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+}
+
+.terminalDot:nth-child(1) { background: #ff5f57; }
+.terminalDot:nth-child(2) { background: #febc2e; }
+.terminalDot:nth-child(3) { background: #28c840; }
+
+.terminalCode {
+  margin: 0;
+  padding: 20px 22px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: #a3b5cc;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.terminalHint {
+  font-size: 0.78rem;
+  color: var(--text-3);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
 /* ── Endpoints Grid ───────────────────────────────── */
 .endpointsSection {
   max-width: 900px;
@@ -584,116 +650,105 @@
   background: var(--bg);
 }
 
-.agentTabs {
+.agentHeader {
   display: flex;
-  overflow-x: auto;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-2);
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.agentTabs::-webkit-scrollbar { display: none; }
-
-.agentTab {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 11px 16px;
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--text-2);
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color 0.12s, border-color 0.12s, background 0.12s;
-  flex-shrink: 0;
-}
-
-.agentTab:hover {
-  color: var(--text);
-  background: var(--bg);
-}
-
-.agentTabActive {
-  color: var(--blue);
-  border-bottom-color: var(--blue);
-  background: var(--bg);
-}
-
-.agentBody {
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
   padding: 20px 20px 16px;
+  flex-wrap: wrap;
 }
 
 .agentDesc {
   font-size: 0.85rem;
   color: var(--text-2);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   line-height: 1.5;
+  max-width: 540px;
 }
 
-.codeBlock {
-  display: flex;
-  align-items: stretch;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-  background: var(--bg-2);
-}
-
-.codeText {
-  flex: 1;
-  padding: 12px 14px;
-  font-family: var(--mono);
-  font-size: 0.8rem;
-  color: var(--text);
-  overflow-x: auto;
-  white-space: nowrap;
-  scrollbar-width: thin;
-  line-height: 1.4;
-}
-
-.codeCopy {
-  padding: 0 16px;
+.agentSkillsLink {
   font-size: 0.78rem;
-  font-weight: 500;
-  background: var(--bg);
-  border: none;
-  border-left: 1px solid var(--border);
-  cursor: pointer;
-  color: var(--text-2);
-  white-space: nowrap;
-  transition: background 0.1s, color 0.1s;
-  flex-shrink: 0;
-}
-
-.codeCopy:hover {
-  background: var(--blue-pale);
   color: var(--blue);
+  text-decoration: none;
 }
 
-.codeCopyDone {
-  color: #16a34a !important;
-  background: #dcfce7 !important;
+.agentSkillsLink:hover {
+  text-decoration: underline;
 }
 
-@media (prefers-color-scheme: dark) {
-  .codeCopyDone {
-    color: #4ade80 !important;
-    background: #052e16 !important;
-  }
+.skillCopyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
 }
 
-.agentNote {
-  margin-top: 10px;
+.skillCopyBtn:hover:not(:disabled) {
+  background: #006ad4;
+}
+
+.skillCopyBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.skillCopyBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.skillCopyBtnDone {
+  background: #16a34a !important;
+}
+
+.skillEmbed {
+  margin: 0;
+  padding: 18px 20px;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  line-height: 1.65;
+  color: var(--text-2);
+  background: var(--bg-2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  overflow: auto;
+  max-height: 320px;
+  white-space: pre;
+}
+
+.agentFooter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  flex-wrap: wrap;
+}
+
+.agentRawLink {
   font-size: 0.78rem;
+  color: var(--blue);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.agentRawLink:hover {
+  text-decoration: underline;
+}
+
+.agentFooterHint {
+  font-size: 0.75rem;
   color: var(--text-3);
   line-height: 1.5;
-}
-
-.agentNote a {
-  color: var(--blue);
 }
 
 /* ── Footer ───────────────────────────────────────── */

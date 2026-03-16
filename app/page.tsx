@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import s from './page.module.css'
 
 // ── URL parser ────────────────────────────────────────────────────────────────
@@ -67,58 +67,6 @@ function fmtBytes(n: number): string {
   return `${(n / 1000).toFixed(1)}k chars`
 }
 
-// ── Agent install data ────────────────────────────────────────────────────────
-
-const AGENTS = [
-  {
-    id: 'claude-code',
-    label: 'Claude Code',
-    icon: '🤖',
-    command: 'curl -s https://bsky-md.vercel.app/skill.md > ~/.claude/commands/bsky.md',
-    desc: 'Installs a global /bsky slash command. Use it in any Claude Code session with /bsky.',
-    note: 'After running, type <code>/bsky</code> in any Claude Code conversation to activate.',
-  },
-  {
-    id: 'claude-md',
-    label: 'CLAUDE.md',
-    icon: '📄',
-    command: 'curl -s https://bsky-md.vercel.app/skill.md >> CLAUDE.md',
-    desc: 'Appends the full API reference to your project\'s CLAUDE.md — Claude will use it automatically for every conversation in this project.',
-    note: 'Run this in your project root. Works for Claude Code, Cursor, and any agent that reads CLAUDE.md.',
-  },
-  {
-    id: 'cursor',
-    label: 'Cursor',
-    icon: '⌨️',
-    command: 'curl -s https://bsky-md.vercel.app/skill.md >> .cursorrules',
-    desc: 'Appends the API reference to your Cursor project rules.',
-    note: 'Cursor reads .cursorrules automatically for every chat in this workspace.',
-  },
-  {
-    id: 'windsurf',
-    label: 'Windsurf',
-    icon: '🏄',
-    command: 'curl -s https://bsky-md.vercel.app/skill.md >> .windsurfrules',
-    desc: 'Appends the API reference to your Windsurf workspace rules.',
-    note: 'Windsurf reads .windsurfrules for every Cascade conversation in this workspace.',
-  },
-  {
-    id: 'copilot',
-    label: 'Copilot',
-    icon: '🐙',
-    command: 'mkdir -p .github && curl -s https://bsky-md.vercel.app/skill.md >> .github/copilot-instructions.md',
-    desc: 'Appends the API reference to your GitHub Copilot workspace instructions.',
-    note: 'GitHub Copilot reads .github/copilot-instructions.md automatically.',
-  },
-  {
-    id: 'raw',
-    label: 'Raw file',
-    icon: '📋',
-    command: 'curl -s https://bsky-md.vercel.app/skill.md',
-    desc: 'Print the raw skill file — paste it into any agent context, system prompt, or rules file.',
-    note: 'Or just open <a href="/skill.md" target="_blank" rel="noopener noreferrer">bsky-md.vercel.app/skill.md</a> in your browser.',
-  },
-]
 
 // ── Catalogue ─────────────────────────────────────────────────────────────────
 
@@ -155,8 +103,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [copiedUrl, setCopiedUrl] = useState(false)
   const [copiedMd, setCopiedMd] = useState(false)
-  const [activeAgent, setActiveAgent] = useState('claude-code')
-  const [copiedCmd, setCopiedCmd] = useState(false)
+  const [skillMd, setSkillMd] = useState<string | null>(null)
+  const [copiedSkill, setCopiedSkill] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const resultRef = useRef<HTMLDivElement | null>(null)
 
@@ -235,15 +183,19 @@ export default function Home() {
     })
   }, [markdown])
 
-  const copyCmd = useCallback((cmd: string) => {
-    navigator.clipboard.writeText(cmd).then(() => {
-      setCopiedCmd(true)
-      setTimeout(() => setCopiedCmd(false), 2000)
+  const copySkill = useCallback(() => {
+    if (!skillMd) return
+    navigator.clipboard.writeText(skillMd).then(() => {
+      setCopiedSkill(true)
+      setTimeout(() => setCopiedSkill(false), 2000)
     })
+  }, [skillMd])
+
+  useEffect(() => {
+    fetch('/skill.md').then(r => r.text()).then(setSkillMd).catch(() => {})
   }, [])
 
   const activePath = parsed ? getPath(parsed, parsed.isPost ? viewMode : 'post') : null
-  const currentAgent = AGENTS.find((a) => a.id === activeAgent) ?? AGENTS[0]
   const charCount = markdown ? markdown.length : 0
 
   return (
@@ -382,6 +334,46 @@ export default function Home() {
         <div className={s.infoItem}><span className={s.infoIcon}>🤖</span> LLM-friendly plain text</div>
       </div>
 
+      {/* ── Terminal examples ── */}
+      <section className={s.terminalSection}>
+        <p className={s.sectionTitle}>Works great in your terminal too</p>
+        <p className={s.terminalSubtitle}>
+          <code>curl</code> any endpoint and get plain Markdown back — pipe it to <code>glow</code>, your agent, or just read it.
+        </p>
+        <div className={s.terminalBlock}>
+          <div className={s.terminalBar}>
+            <span className={s.terminalDot} />
+            <span className={s.terminalDot} />
+            <span className={s.terminalDot} />
+          </div>
+          <pre className={s.terminalCode}>{[
+            '# Profile',
+            'curl https://bsky-md.vercel.app/profile/j4ck.xyz',
+            '',
+            '# Recent posts',
+            'curl https://bsky-md.vercel.app/profile/jcsalterego.bsky.social/feed',
+            '',
+            '# Followers',
+            'curl https://bsky-md.vercel.app/profile/j4ck.xyz/followers',
+            '',
+            '# Search',
+            'curl "https://bsky-md.vercel.app/search?q=atproto"',
+            '',
+            '# Trending topics',
+            'curl https://bsky-md.vercel.app/trending',
+            '',
+            '# Custom feed',
+            'curl https://bsky-md.vercel.app/profile/bsky.app/feed/whats-hot',
+            '',
+            '# Agent skill file',
+            'curl -s https://bsky-md.vercel.app/skill.md > ~/.claude/commands/bsky.md',
+          ].join('\n')}</pre>
+        </div>
+        <p className={s.terminalHint}>
+          Tip: visiting this URL from <code>curl</code> or any terminal client automatically returns Markdown — no flags needed.
+        </p>
+      </section>
+
       {/* ── Endpoints ── */}
       <section className={s.endpointsSection} style={{ marginTop: 48 }}>
         <p className={s.sectionTitle}>All Endpoints</p>
@@ -400,35 +392,38 @@ export default function Home() {
       <section className={s.agentSection}>
         <p className={s.sectionTitle}>Add to your coding agent</p>
         <div className={s.agentCard}>
-          {/* Tab row */}
-          <div className={s.agentTabs}>
-            {AGENTS.map((a) => (
-              <button
-                key={a.id}
-                className={`${s.agentTab} ${activeAgent === a.id ? s.agentTabActive : ''}`}
-                onClick={() => { setActiveAgent(a.id); setCopiedCmd(false) }}
+          <div className={s.agentHeader}>
+            <div>
+              <p className={s.agentDesc}>
+                Copy this skill file and paste it into any coding agent — Claude, Cursor, Windsurf, Copilot, or any tool that accepts a system prompt or rules file.
+              </p>
+              <a
+                className={s.agentSkillsLink}
+                href="https://agentskills.io/home"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                {a.icon} {a.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Body */}
-          <div className={s.agentBody}>
-            <p className={s.agentDesc}>{currentAgent.desc}</p>
-            <div className={s.codeBlock}>
-              <code className={s.codeText}>$ {currentAgent.command}</code>
-              <button
-                className={`${s.codeCopy} ${copiedCmd ? s.codeCopyDone : ''}`}
-                onClick={() => copyCmd(currentAgent.command)}
-              >
-                {copiedCmd ? '✓ Copied' : 'Copy'}
-              </button>
+                Learn about agent skills at agentskills.io ↗
+              </a>
             </div>
-            <p
-              className={s.agentNote}
-              dangerouslySetInnerHTML={{ __html: currentAgent.note }}
-            />
+            <button
+              className={`${s.skillCopyBtn} ${copiedSkill ? s.skillCopyBtnDone : ''}`}
+              onClick={copySkill}
+              disabled={!skillMd}
+            >
+              {copiedSkill ? '✓ Copied!' : '📋 Copy skill.md'}
+            </button>
+          </div>
+          <pre className={s.skillEmbed}>
+            {skillMd ?? 'Loading…'}
+          </pre>
+          <div className={s.agentFooter}>
+            <a href="/skill.md" target="_blank" rel="noopener noreferrer" className={s.agentRawLink}>
+              View raw ↗
+            </a>
+            <span className={s.agentFooterHint}>
+              or <code>curl -s https://bsky-md.vercel.app/skill.md {'>'} ~/.claude/commands/bsky.md</code> for Claude Code
+            </span>
           </div>
         </div>
       </section>
