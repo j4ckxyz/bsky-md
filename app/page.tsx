@@ -1,66 +1,352 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client'
+
+import { useState, useCallback, useRef } from 'react'
+import s from './page.module.css'
+
+// ── URL parser ────────────────────────────────────────────────────────────────
+
+interface Parsed {
+  path: string
+  label: string
+  isPost: boolean
+}
+
+function parseBskyInput(raw: string): Parsed | null {
+  const input = raw.trim()
+  if (!input) return null
+
+  try {
+    const urlStr = /^https?:\/\//i.test(input) ? input : `https://${input}`
+    const url = new URL(urlStr)
+
+    if (['bsky.app', 'www.bsky.app', 'staging.bsky.app'].includes(url.hostname)) {
+      const p = url.pathname.split('/').filter(Boolean)
+
+      if (p.length === 0) return { path: '/trending', label: 'Trending', isPost: false }
+
+      if (p[0] === 'profile' && p[1]) {
+        const h = p[1]
+        if (p.length === 2) return { path: `/profile/${h}`, label: 'Profile', isPost: false }
+        if (p[2] === 'post' && p[3]) return { path: `/profile/${h}/post/${p[3]}`, label: 'Post', isPost: true }
+        if (p[2] === 'feed' && p[3]) return { path: `/profile/${h}/feed/${p[3]}`, label: 'Feed', isPost: false }
+        if (p[2] === 'likes') return { path: `/profile/${h}/likes`, label: 'Likes', isPost: false }
+        if (p[2] === 'followers') return { path: `/profile/${h}/followers`, label: 'Followers', isPost: false }
+        if (p[2] === 'following') return { path: `/profile/${h}/following`, label: 'Following', isPost: false }
+        return { path: `/profile/${h}`, label: 'Profile', isPost: false }
+      }
+
+      if (p[0] === 'hashtag' && p[1])
+        return { path: `/search?q=${encodeURIComponent('#' + p[1])}`, label: 'Hashtag', isPost: false }
+
+      if (p[0] === 'search') {
+        const q = url.searchParams.get('q') ?? ''
+        return { path: `/search?q=${encodeURIComponent(q)}`, label: 'Search', isPost: false }
+      }
+
+      if (p[0] === 'trending')
+        return { path: '/trending', label: 'Trending', isPost: false }
+    }
+  } catch {
+    // not a URL
+  }
+
+  if (input.startsWith('did:'))
+    return { path: `/profile/${input}`, label: 'Profile', isPost: false }
+
+  if (input.startsWith('#'))
+    return { path: `/search?q=${encodeURIComponent(input)}`, label: 'Hashtag', isPost: false }
+
+  if (/^[\w.-]+$/.test(input) && input.includes('.'))
+    return { path: `/profile/${input}`, label: 'Profile', isPost: false }
+
+  return { path: `/search?q=${encodeURIComponent(input)}`, label: 'Search', isPost: false }
+}
+
+function fmtBytes(n: number): string {
+  if (n < 1000) return `${n} chars`
+  return `${(n / 1000).toFixed(1)}k chars`
+}
+
+// ── Catalogue ─────────────────────────────────────────────────────────────────
+
+const ENDPOINTS = [
+  { path: '/profile/:handle',            desc: 'Bio, stats, avatar/banner',    example: '/profile/bsky.app' },
+  { path: '/profile/:handle/posts',      desc: 'Paginated original posts',      example: '/profile/bsky.app/posts' },
+  { path: '/profile/:handle/post/:rkey', desc: 'Single post with embeds',       example: '/profile/bsky.app/post/3lhreomsy5k2x' },
+  { path: '/…/post/:rkey/thread',        desc: 'Full self-reply thread',        example: '/profile/bsky.app/post/3lhreomsy5k2x/thread' },
+  { path: '/profile/:handle/feed/:rkey', desc: 'Public custom feed',            example: '/profile/bsky.app/feed/whats-hot' },
+  { path: '/profile/:handle/likes',      desc: 'Posts the user liked',          example: '/profile/bsky.app/likes' },
+  { path: '/profile/:handle/followers',  desc: 'Follower list',                 example: '/profile/bsky.app/followers' },
+  { path: '/profile/:handle/following',  desc: 'Following list',                example: '/profile/bsky.app/following' },
+  { path: '/search?q=:query',            desc: 'Full-text post search',         example: '/search?q=atproto' },
+  { path: '/trending',                   desc: 'Trending topics right now',     example: '/trending' },
+  { path: '/llms.txt',                   desc: 'Machine-readable API guide',    example: '/llms.txt' },
+]
+
+const QUICK_LINKS = [
+  { label: '🔥 Trending',     path: '/trending' },
+  { label: '👤 bsky.app',     path: '/profile/bsky.app' },
+  { label: '🌐 What\'s Hot',  path: '/profile/bsky.app/feed/whats-hot' },
+  { label: '#atproto',        path: '/search?q=%23atproto' },
+  { label: '📰 Tech',         path: '/search?q=tech' },
+]
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Home() {
+  const [input, setInput] = useState('')
+  const [parsed, setParsed] = useState<Parsed | null>(null)
+  const [viewMode, setViewMode] = useState<'post' | 'thread'>('thread')
+  const [markdown, setMarkdown] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [copiedUrl, setCopiedUrl] = useState(false)
+  const [copiedMd, setCopiedMd] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
+  const resultRef = useRef<HTMLDivElement | null>(null)
+
+  // Live type detection as user types
+  const detected = input.trim() ? parseBskyInput(input) : null
+
+  const getPath = useCallback((p: Parsed, mode: 'post' | 'thread') => {
+    if (p.isPost && mode === 'thread') return p.path + '/thread'
+    return p.path
+  }, [])
+
+  const fetchMd = useCallback(async (apiPath: string) => {
+    if (abortRef.current) abortRef.current.abort()
+    const ctrl = new AbortController()
+    abortRef.current = ctrl
+    setLoading(true)
+    setError(null)
+    setMarkdown(null)
+    try {
+      const res = await fetch(apiPath, { signal: ctrl.signal })
+      const text = await res.text()
+      if (!res.ok) setError(text)
+      else setMarkdown(text)
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name !== 'AbortError') setError(e.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const run = useCallback(
+    (p: Parsed, mode: 'post' | 'thread') => {
+      setParsed(p)
+      fetchMd(getPath(p, mode))
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80)
+    },
+    [fetchMd, getPath],
+  )
+
+  const handleConvert = useCallback(() => {
+    const p = parseBskyInput(input)
+    if (!p) return
+    run(p, viewMode)
+  }, [input, viewMode, run])
+
+  const handleQuick = useCallback(
+    (path: string) => {
+      setInput(path)
+      run({ path, label: 'Quick', isPost: false }, 'post')
+    },
+    [run],
+  )
+
+  const handleViewToggle = useCallback(
+    (mode: 'post' | 'thread') => {
+      setViewMode(mode)
+      if (parsed?.isPost) fetchMd(getPath(parsed, mode))
+    },
+    [parsed, fetchMd, getPath],
+  )
+
+  const copyUrl = useCallback(() => {
+    if (!parsed) return
+    const full = (typeof window !== 'undefined' ? window.location.origin : '') + getPath(parsed, viewMode)
+    navigator.clipboard.writeText(full).then(() => {
+      setCopiedUrl(true)
+      setTimeout(() => setCopiedUrl(false), 2000)
+    })
+  }, [parsed, viewMode, getPath])
+
+  const copyMarkdown = useCallback(() => {
+    if (!markdown) return
+    navigator.clipboard.writeText(markdown).then(() => {
+      setCopiedMd(true)
+      setTimeout(() => setCopiedMd(false), 2000)
+    })
+  }, [markdown])
+
+  const activePath = parsed ? getPath(parsed, parsed.isPost ? viewMode : 'post') : null
+  const charCount = markdown ? markdown.length : 0
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
+    <div className={s.page}>
+      {/* ── Header ── */}
+      <header className={s.header}>
+        <div className={s.nav}>
+          <a href="/" className={s.logo}>
+            <img src="/icon.svg" alt="" className={s.logoIcon} />
+            bsky.md
           </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
+          <nav className={s.navLinks}>
+            <a href="/trending">Trending</a>
+            <a href="/llms.txt">llms.txt</a>
+            <a href="https://tangled.org/did:plc:4hawmtgzjx3vclfyphbhfn7v/bsky-md" target="_blank" rel="noopener noreferrer">
+              Source
+            </a>
+          </nav>
+        </div>
+      </header>
+
+      {/* ── Hero ── */}
+      <section className={s.hero}>
+        <h1 className={s.title}>Bluesky, as Markdown.</h1>
+        <p className={s.subtitle}>
+          Paste any bsky.app URL — profile, post, feed, search, or hashtag — and get back clean,
+          portable Markdown instantly.
+        </p>
+
+        <div className={s.inputWrapper}>
+          <input
+            className={s.input}
+            type="text"
+            placeholder="bsky.app/profile/...  ·  post URL  ·  #hashtag  ·  search term"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleConvert()}
+            autoFocus
+            spellCheck={false}
+            autoComplete="off"
+          />
+          {detected && <span className={s.detectedBadge}>{detected.label}</span>}
+          <button className={s.convertBtn} onClick={handleConvert}>
+            Convert →
+          </button>
+        </div>
+
+        <div className={s.pills}>
+          {QUICK_LINKS.map((ql) => (
+            <button key={ql.path} className={s.pill} onClick={() => handleQuick(ql.path)}>
+              {ql.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Result ── */}
+      {(loading || markdown !== null || error !== null) && parsed && (
+        <section className={s.resultSection} ref={resultRef}>
+          <div className={s.resultCard}>
+
+            {/* Top bar: label · url · copy url · open */}
+            <div className={s.resultBar}>
+              <span className={s.resultLabel}>{parsed.label}</span>
+              <code className={s.resultUrl}>{activePath}</code>
+              <div className={s.resultActions}>
+                <button
+                  className={`${s.actionBtn} ${copiedUrl ? s.actionBtnSuccess : ''}`}
+                  onClick={copyUrl}
+                >
+                  {copiedUrl ? '✓ Copied' : 'Copy URL'}
+                </button>
+                <a
+                  className={s.actionBtn}
+                  href={activePath ?? '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Raw ↗
+                </a>
+              </div>
+            </div>
+
+            {/* Post / Thread toggle */}
+            {parsed.isPost && (
+              <div className={s.toggle}>
+                <button
+                  className={`${s.toggleBtn} ${viewMode === 'thread' ? s.toggleActive : ''}`}
+                  onClick={() => handleViewToggle('thread')}
+                >
+                  Full Thread
+                </button>
+                <button
+                  className={`${s.toggleBtn} ${viewMode === 'post' ? s.toggleActive : ''}`}
+                  onClick={() => handleViewToggle('post')}
+                >
+                  Single Post
+                </button>
+              </div>
+            )}
+
+            {/* Preview toolbar */}
+            {!loading && markdown && (
+              <div className={s.previewToolbar}>
+                <span className={s.charCount}>{fmtBytes(charCount)}</span>
+                <button
+                  className={`${s.actionBtn} ${copiedMd ? s.actionBtnSuccess : ''}`}
+                  onClick={copyMarkdown}
+                >
+                  {copiedMd ? '✓ Copied!' : '📋 Copy Markdown'}
+                </button>
+              </div>
+            )}
+
+            {/* Content */}
+            {loading && (
+              <div className={s.previewLoading}>
+                <span className={s.spinner} />
+                Fetching…
+              </div>
+            )}
+            {!loading && error && (
+              <pre className={`${s.preview} ${s.previewError}`}>{error}</pre>
+            )}
+            {!loading && markdown && (
+              <pre className={s.preview}>{markdown}</pre>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ── Info strip ── */}
+      <div className={s.infoStrip} style={{ marginTop: 32 }}>
+        <div className={s.infoItem}><span className={s.infoIcon}>🔓</span> No auth or API key</div>
+        <div className={s.infoItem}><span className={s.infoIcon}>🌍</span> Open CORS from any origin</div>
+        <div className={s.infoItem}><span className={s.infoIcon}>⚡</span> Edge-cached responses</div>
+        <div className={s.infoItem}><span className={s.infoIcon}>🤖</span> LLM-friendly plain text</div>
+      </div>
+
+      {/* ── Endpoints ── */}
+      <section className={s.endpointsSection} style={{ marginTop: 48 }}>
+        <p className={s.sectionTitle}>All Endpoints</p>
+        <div className={s.grid}>
+          {ENDPOINTS.map((ep) => (
+            <a key={ep.path} className={s.card} href={ep.example} target="_blank" rel="noopener noreferrer">
+              <span className={s.cardBadge}>GET</span>
+              <code className={s.cardPath}>{ep.path}</code>
+              <p className={s.cardDesc}>{ep.desc}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer className={s.footer} style={{ marginTop: 64 }}>
+        <div className={s.footerLinks}>
+          <a href="/trending">Trending</a>
+          <a href="/llms.txt">llms.txt</a>
+          <a href="/docs">API Docs</a>
+          <a href="/search?q=atproto">Search</a>
+          <a href="https://tangled.org/did:plc:4hawmtgzjx3vclfyphbhfn7v/bsky-md" target="_blank" rel="noopener noreferrer">
+            Source on Tangled
           </a>
         </div>
-      </main>
+        <p className={s.footerNote}>Content-Type: text/markdown · bsky-md.vercel.app</p>
+      </footer>
     </div>
-  );
+  )
 }

@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@atproto/api": "^0.19.3",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3"
