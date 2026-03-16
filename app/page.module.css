@@ -569,6 +569,133 @@
   line-height: 1.45;
 }
 
+/* ── Agent install section ────────────────────────── */
+.agentSection {
+  max-width: 900px;
+  width: 100%;
+  margin: 56px auto 0;
+  padding: 0 24px;
+}
+
+.agentCard {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.agentTabs {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.agentTabs::-webkit-scrollbar { display: none; }
+
+.agentTab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 16px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-2);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+  flex-shrink: 0;
+}
+
+.agentTab:hover {
+  color: var(--text);
+  background: var(--bg);
+}
+
+.agentTabActive {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+  background: var(--bg);
+}
+
+.agentBody {
+  padding: 20px 20px 16px;
+}
+
+.agentDesc {
+  font-size: 0.85rem;
+  color: var(--text-2);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.codeBlock {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-2);
+}
+
+.codeText {
+  flex: 1;
+  padding: 12px 14px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text);
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  line-height: 1.4;
+}
+
+.codeCopy {
+  padding: 0 16px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  background: var(--bg);
+  border: none;
+  border-left: 1px solid var(--border);
+  cursor: pointer;
+  color: var(--text-2);
+  white-space: nowrap;
+  transition: background 0.1s, color 0.1s;
+  flex-shrink: 0;
+}
+
+.codeCopy:hover {
+  background: var(--blue-pale);
+  color: var(--blue);
+}
+
+.codeCopyDone {
+  color: #16a34a !important;
+  background: #dcfce7 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .codeCopyDone {
+    color: #4ade80 !important;
+    background: #052e16 !important;
+  }
+}
+
+.agentNote {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+.agentNote a {
+  color: var(--blue);
+}
+
 /* ── Footer ───────────────────────────────────────── */
 .footer {
   margin-top: auto;

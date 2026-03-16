@@ -67,6 +67,59 @@ function fmtBytes(n: number): string {
   return `${(n / 1000).toFixed(1)}k chars`
 }
 
+// ── Agent install data ────────────────────────────────────────────────────────
+
+const AGENTS = [
+  {
+    id: 'claude-code',
+    label: 'Claude Code',
+    icon: '🤖',
+    command: 'curl -s https://bsky-md.vercel.app/skill.md > ~/.claude/commands/bsky.md',
+    desc: 'Installs a global /bsky slash command. Use it in any Claude Code session with /bsky.',
+    note: 'After running, type <code>/bsky</code> in any Claude Code conversation to activate.',
+  },
+  {
+    id: 'claude-md',
+    label: 'CLAUDE.md',
+    icon: '📄',
+    command: 'curl -s https://bsky-md.vercel.app/skill.md >> CLAUDE.md',
+    desc: 'Appends the full API reference to your project\'s CLAUDE.md — Claude will use it automatically for every conversation in this project.',
+    note: 'Run this in your project root. Works for Claude Code, Cursor, and any agent that reads CLAUDE.md.',
+  },
+  {
+    id: 'cursor',
+    label: 'Cursor',
+    icon: '⌨️',
+    command: 'curl -s https://bsky-md.vercel.app/skill.md >> .cursorrules',
+    desc: 'Appends the API reference to your Cursor project rules.',
+    note: 'Cursor reads .cursorrules automatically for every chat in this workspace.',
+  },
+  {
+    id: 'windsurf',
+    label: 'Windsurf',
+    icon: '🏄',
+    command: 'curl -s https://bsky-md.vercel.app/skill.md >> .windsurfrules',
+    desc: 'Appends the API reference to your Windsurf workspace rules.',
+    note: 'Windsurf reads .windsurfrules for every Cascade conversation in this workspace.',
+  },
+  {
+    id: 'copilot',
+    label: 'Copilot',
+    icon: '🐙',
+    command: 'mkdir -p .github && curl -s https://bsky-md.vercel.app/skill.md >> .github/copilot-instructions.md',
+    desc: 'Appends the API reference to your GitHub Copilot workspace instructions.',
+    note: 'GitHub Copilot reads .github/copilot-instructions.md automatically.',
+  },
+  {
+    id: 'raw',
+    label: 'Raw file',
+    icon: '📋',
+    command: 'curl -s https://bsky-md.vercel.app/skill.md',
+    desc: 'Print the raw skill file — paste it into any agent context, system prompt, or rules file.',
+    note: 'Or just open <a href="/skill.md" target="_blank" rel="noopener noreferrer">bsky-md.vercel.app/skill.md</a> in your browser.',
+  },
+]
+
 // ── Catalogue ─────────────────────────────────────────────────────────────────
 
 const ENDPOINTS = [
@@ -102,6 +155,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [copiedUrl, setCopiedUrl] = useState(false)
   const [copiedMd, setCopiedMd] = useState(false)
+  const [activeAgent, setActiveAgent] = useState('claude-code')
+  const [copiedCmd, setCopiedCmd] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const resultRef = useRef<HTMLDivElement | null>(null)
 
@@ -180,7 +235,15 @@ export default function Home() {
     })
   }, [markdown])
 
+  const copyCmd = useCallback((cmd: string) => {
+    navigator.clipboard.writeText(cmd).then(() => {
+      setCopiedCmd(true)
+      setTimeout(() => setCopiedCmd(false), 2000)
+    })
+  }, [])
+
   const activePath = parsed ? getPath(parsed, parsed.isPost ? viewMode : 'post') : null
+  const currentAgent = AGENTS.find((a) => a.id === activeAgent) ?? AGENTS[0]
   const charCount = markdown ? markdown.length : 0
 
   return (
@@ -330,6 +393,43 @@ export default function Home() {
               <p className={s.cardDesc}>{ep.desc}</p>
             </a>
           ))}
+        </div>
+      </section>
+
+      {/* ── Agent install ── */}
+      <section className={s.agentSection}>
+        <p className={s.sectionTitle}>Add to your coding agent</p>
+        <div className={s.agentCard}>
+          {/* Tab row */}
+          <div className={s.agentTabs}>
+            {AGENTS.map((a) => (
+              <button
+                key={a.id}
+                className={`${s.agentTab} ${activeAgent === a.id ? s.agentTabActive : ''}`}
+                onClick={() => { setActiveAgent(a.id); setCopiedCmd(false) }}
+              >
+                {a.icon} {a.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Body */}
+          <div className={s.agentBody}>
+            <p className={s.agentDesc}>{currentAgent.desc}</p>
+            <div className={s.codeBlock}>
+              <code className={s.codeText}>$ {currentAgent.command}</code>
+              <button
+                className={`${s.codeCopy} ${copiedCmd ? s.codeCopyDone : ''}`}
+                onClick={() => copyCmd(currentAgent.command)}
+              >
+                {copiedCmd ? '✓ Copied' : 'Copy'}
+              </button>
+            </div>
+            <p
+              className={s.agentNote}
+              dangerouslySetInnerHTML={{ __html: currentAgent.note }}
+            />
+          </div>
         </div>
       </section>
 
