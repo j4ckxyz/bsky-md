@@ -1,6 +1,5 @@
 services:
   bsky-md:
-    image: j4ckxyz/bsky-md:latest
     build: .
     ports:
       - "${PORT:-3010}:3010"
