@@ -5,8 +5,8 @@ import { NextRequest, NextResponse } from 'next/server'
 // Each edge instance tracks its own state. Not globally coordinated, but
 // sufficient to cap runaway single-IP abuse and protect Bluesky's API.
 // ---------------------------------------------------------------------------
-const WINDOW_MS = 60_000 // 1 minute
-const MAX_REQUESTS = 10  // per IP per window
+const WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS ?? '60000', 10)
+const MAX_REQUESTS = parseInt(process.env.RATE_LIMIT_MAX ?? '10', 10)
 
 const ipWindows = new Map<string, number[]>()
 

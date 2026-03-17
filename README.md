@@ -55,6 +55,64 @@ curl https://bsky-md.vercel.app/trending
 
 See [`/llms.txt`](https://bsky-md.vercel.app/llms.txt) for a machine-readable guide to every endpoint.
 
+## Self-hosting with Docker
+
+Run your own instance on any machine — works on Mac, Linux, and Windows. Great paired with a [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) to make it publicly accessible without opening ports.
+
+### Quick start (one-liner)
+
+```bash
+docker run -d -p 3010:3010 --restart unless-stopped j4ckxyz/bsky-md:latest
+```
+
+Your instance is now running at **http://localhost:3010**.
+
+### Docker Compose (recommended)
+
+Compose makes it easy to configure the port and rate limits.
+
+1. Download the compose file:
+   ```bash
+   curl -O https://tangled.org/j4ck.xyz/bsky-md/raw/main/docker-compose.yml
+   ```
+2. (Optional) Edit `docker-compose.yml` to adjust settings — see the table below.
+3. Start it:
+   ```bash
+   docker compose up -d
+   ```
+4. Stop it:
+   ```bash
+   docker compose down
+   ```
+
+### Configuration
+
+Edit these values directly in `docker-compose.yml`, or pass them as environment variables:
+
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `3010` | Host port to expose (e.g. `PORT=8080 docker compose up -d`) |
+| `RATE_LIMIT_MAX` | `10` | Max requests per IP per window |
+| `RATE_LIMIT_WINDOW_MS` | `60000` | Window size in milliseconds (default: 1 minute) |
+
+**Personal use?** Set `RATE_LIMIT_MAX=100` or remove the limit entirely.
+
+**Public instance?** Keep the defaults or lower `RATE_LIMIT_MAX` to protect Bluesky's API.
+
+### Updating
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+### Building from source
+
+```bash
+git clone https://tangled.org/j4ck.xyz/bsky-md
+cd bsky-md
+docker compose up --build -d
+```
+
 ## Stack
 
-Next.js 16 · TypeScript · `@atproto/api` · Deployed on Vercel
+Next.js 16 · TypeScript · `@atproto/api` · Deployed on Vercel · Docker: `j4ckxyz/bsky-md`

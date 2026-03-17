@@ -1,0 +1,23 @@
+services:
+  bsky-md:
+    image: j4ckxyz/bsky-md:latest
+    build: .
+    ports:
+      - "${PORT:-3010}:3010"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+
+      # ── Rate limiting ───────────────────────────────────────────────────────
+      # Max requests per IP before returning 429. Default: 10/min.
+      # Increase if you're the only user, decrease to protect Bluesky's API.
+      - RATE_LIMIT_MAX=${RATE_LIMIT_MAX:-10}
+      # Rolling window in milliseconds. Default: 60000 (1 minute).
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-60000}
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3010/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
