@@ -6,15 +6,16 @@ engine: "nixery"
 
 dependencies:
   nixpkgs:
-    - docker
+    - kaniko
 
 steps:
   - name: Build and push to Docker Hub
     command: |
-      echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
-      docker buildx create --use
-      docker buildx build \
-        --platform linux/amd64,linux/arm64 \
-        --tag j4ckxyz/bsky-md:latest \
-        --push \
-        .
+      mkdir -p /root/.docker
+      printf '{"auths":{"https://index.docker.io/v1/":{"username":"%s","password":"%s"}}}' \
+        "$DOCKER_USERNAME" "$DOCKER_TOKEN" > /root/.docker/config.json
+
+      executor \
+        --dockerfile=/tangled/workspace/Dockerfile \
+        --destination=docker.io/j4ckxyz/bsky-md:latest \
+        --context=dir:///tangled/workspace
