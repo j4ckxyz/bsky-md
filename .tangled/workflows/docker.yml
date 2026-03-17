@@ -11,9 +11,9 @@ dependencies:
 steps:
   - name: Build and push to Docker Hub
     command: |
-      mkdir -p /root/.docker
+      mkdir -p /kaniko/.docker
       AUTH=$(printf '%s:%s' "$DOCKER_USERNAME" "$DOCKER_TOKEN" | base64 -w0)
-      printf '{"auths":{"https://index.docker.io/v1/":{"auth":"%s"}}}' "$AUTH" > /root/.docker/config.json
+      printf '{"auths":{"https://index.docker.io/v1/":{"auth":"%s"}}}' "$AUTH" > /kaniko/.docker/config.json
 
       executor \
         --dockerfile=/tangled/workspace/Dockerfile \
