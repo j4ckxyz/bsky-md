@@ -12,8 +12,8 @@ steps:
   - name: Build and push to Docker Hub
     command: |
       mkdir -p /root/.docker
-      printf '{"auths":{"https://index.docker.io/v1/":{"username":"%s","password":"%s"}}}' \
-        "$DOCKER_USERNAME" "$DOCKER_TOKEN" > /root/.docker/config.json
+      AUTH=$(printf '%s:%s' "$DOCKER_USERNAME" "$DOCKER_TOKEN" | base64 -w0)
+      printf '{"auths":{"https://index.docker.io/v1/":{"auth":"%s"}}}' "$AUTH" > /root/.docker/config.json
 
       executor \
         --dockerfile=/tangled/workspace/Dockerfile \
