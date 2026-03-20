@@ -348,25 +348,25 @@ export default function Home() {
           </div>
           <pre className={s.terminalCode}>{[
             '# Profile',
-            'curl https://bsky-md.vercel.app/profile/j4ck.xyz',
+            'curl https://bsky.md/profile/j4ck.xyz',
             '',
             '# Recent posts',
-            'curl https://bsky-md.vercel.app/profile/mackuba.eu/posts',
+            'curl https://bsky.md/profile/mackuba.eu/posts',
             '',
             '# Followers',
-            'curl https://bsky-md.vercel.app/profile/j4ck.xyz/followers',
+            'curl https://bsky.md/profile/j4ck.xyz/followers',
             '',
             '# Search',
-            'curl "https://bsky-md.vercel.app/search?q=atproto"',
+            'curl "https://bsky.md/search?q=atproto"',
             '',
             '# Trending topics',
-            'curl https://bsky-md.vercel.app/trending',
+            'curl https://bsky.md/trending',
             '',
             '# Custom feed',
-            'curl https://bsky-md.vercel.app/profile/bsky.app/feed/whats-hot',
+            'curl https://bsky.md/profile/bsky.app/feed/whats-hot',
             '',
             '# Agent skill file',
-            'curl -s https://bsky-md.vercel.app/skill.md > ~/.claude/commands/bsky.md',
+            'curl -s https://bsky.md/skill.md > ~/.claude/commands/bsky.md',
           ].join('\n')}</pre>
         </div>
         <p className={s.terminalHint}>
@@ -422,7 +422,7 @@ export default function Home() {
               View raw ↗
             </a>
             <span className={s.agentFooterHint}>
-              or <code>curl -s https://bsky-md.vercel.app/skill.md {'>'} ~/.claude/commands/bsky.md</code> for Claude Code
+              or <code>curl -s https://bsky.md/skill.md {'>'} ~/.claude/commands/bsky.md</code> for Claude Code
             </span>
           </div>
         </div>
@@ -439,7 +439,7 @@ export default function Home() {
             Source on Tangled
           </a>
         </div>
-        <p className={s.footerNote}>Content-Type: text/markdown · bsky-md.vercel.app</p>
+        <p className={s.footerNote}>Content-Type: text/markdown · bsky.md</p>
       </footer>
     </div>
   )

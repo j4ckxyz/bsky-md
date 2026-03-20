@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import FollowPrompt from './components/FollowPrompt'
 
-const BASE = 'https://bsky-md.vercel.app'
+const BASE = 'https://bsky.md'
 
 export const metadata: Metadata = {
   title: 'bsky.md — Bluesky as Markdown',

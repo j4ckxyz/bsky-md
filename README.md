@@ -1,6 +1,6 @@
 # 🦋 bsky.md — Bluesky as Markdown
 
-**Live: https://bsky-md.vercel.app**
+**Live: https://bsky.md**
 
 Fetch any public Bluesky content as clean, portable Markdown. No auth, no API key, just a URL.
 
@@ -36,24 +36,24 @@ Fetch any public Bluesky content as clean, portable Markdown. No auth, no API ke
 
 ```bash
 # Profile
-curl https://bsky-md.vercel.app/profile/bsky.app
+curl https://bsky.md/profile/bsky.app
 
 # Posts
-curl https://bsky-md.vercel.app/profile/bsky.app/posts
+curl https://bsky.md/profile/bsky.app/posts
 
 # What's Hot feed
-curl https://bsky-md.vercel.app/profile/bsky.app/feed/whats-hot
+curl https://bsky.md/profile/bsky.app/feed/whats-hot
 
 # Search
-curl "https://bsky-md.vercel.app/search?q=atproto"
+curl "https://bsky.md/search?q=atproto"
 
 # Trending
-curl https://bsky-md.vercel.app/trending
+curl https://bsky.md/trending
 ```
 
 ## For LLMs
 
-See [`/llms.txt`](https://bsky-md.vercel.app/llms.txt) for a machine-readable guide to every endpoint.
+See [`/llms.txt`](https://bsky.md/llms.txt) for a machine-readable guide to every endpoint.
 
 ## Self-hosting with Docker
 

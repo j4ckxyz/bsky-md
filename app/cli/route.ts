@@ -4,7 +4,7 @@ export const runtime = 'edge'
 export const revalidate = 3600
 
 export function GET(req: NextRequest) {
-  const host = req.headers.get('host') ?? 'bsky-md.vercel.app'
+  const host = req.headers.get('host') ?? 'bsky.md'
   const scheme = host.startsWith('localhost') ? 'http' : 'https'
   const base = `${scheme}://${host}`
 
