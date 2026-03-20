@@ -59,8 +59,18 @@ export function optionsResponse(): Response {
 /**
  * Extract the base URL of the current request (scheme + host, no trailing
  * slash) so we can generate fully-qualified links in markdown output.
+ *
+ * Prefers x-forwarded-host/x-forwarded-proto set by Vercel / reverse proxies
+ * over req.url, which may contain an internal address (e.g. 0.0.0.0:3010).
  */
 export function baseUrl(req: Request): string {
+  const headers = req.headers as Headers
+  const forwardedHost = headers.get('x-forwarded-host')
+  const forwardedProto = headers.get('x-forwarded-proto')?.split(',')[0].trim()
+  if (forwardedHost) {
+    const scheme = forwardedProto ?? 'https'
+    return `${scheme}://${forwardedHost}`
+  }
   const url = new URL(req.url)
   return `${url.protocol}//${url.host}`
 }
