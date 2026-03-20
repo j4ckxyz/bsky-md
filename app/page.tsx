@@ -80,6 +80,7 @@ const ENDPOINTS = [
   { path: '/profile/:handle/followers',  desc: 'Follower list',                 example: '/profile/bsky.app/followers' },
   { path: '/profile/:handle/following',  desc: 'Following list',                example: '/profile/bsky.app/following' },
   { path: '/search?q=:query',            desc: 'Full-text post search',         example: '/search?q=atproto' },
+  { path: '/links?url=:url',             desc: 'Posts linking to a URL/domain', example: '/links?url=theverge.com' },
   { path: '/trending',                   desc: 'Trending topics right now',     example: '/trending' },
   { path: '/llms.txt',                   desc: 'Machine-readable API guide',    example: '/llms.txt' },
 ]

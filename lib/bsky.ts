@@ -170,7 +170,7 @@ export async function getProfile(handle: string): Promise<Profile> {
 export async function getFeed(
   handle: string,
   cursor?: string,
-  limit = 20,
+  limit = 50,
 ): Promise<FeedPage> {
   const res = await agent.getAuthorFeed({
     actor: handle,
@@ -252,6 +252,25 @@ export async function searchPosts(
 ): Promise<SearchPage> {
   const res = await searchAgent.app.bsky.feed.searchPosts({
     q: query,
+    cursor,
+    limit: Math.min(limit, 100),
+  })
+
+  return {
+    posts: res.data.posts.map((post) => postViewToPostData(post)),
+    cursor: res.data.cursor,
+    hitsTotal: res.data.hitsTotal,
+  }
+}
+
+export async function searchPostsByUrl(
+  url: string,
+  cursor?: string,
+  limit = 50,
+): Promise<SearchPage> {
+  const res = await searchAgent.app.bsky.feed.searchPosts({
+    q: '*',
+    url,
     cursor,
     limit: Math.min(limit, 100),
   })

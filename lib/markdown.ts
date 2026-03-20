@@ -510,6 +510,45 @@ export function renderSearch(query: string, page: SearchPage, baseUrl: string): 
   return lines.join('\n')
 }
 
+// ─── Links / URL search ───────────────────────────────────────────────────────
+
+export function renderLinks(url: string, page: SearchPage, baseUrl: string): string {
+  const lines: string[] = []
+
+  lines.push(`# Posts linking to ${escapeMarkdown(url)}`)
+  lines.push('')
+  if (page.hitsTotal !== undefined) {
+    lines.push(`*${formatNumber(page.hitsTotal)} total results*`)
+    lines.push('')
+  }
+
+  if (page.posts.length === 0) {
+    lines.push('*No posts found.*')
+    return lines.join('\n')
+  }
+
+  for (const post of page.posts) {
+    lines.push(hr())
+    lines.push(renderPostBlock(post))
+    lines.push('')
+    lines.push(
+      `[View post](${baseUrl}${apiPostUrl(post.author.handle, post.rkey)}) · [View thread](${baseUrl}${apiThreadUrl(post.author.handle, post.rkey)}) · [View on Bluesky](${bskyPostUrl(post.author.handle, post.rkey)})`,
+    )
+  }
+
+  lines.push(hr())
+
+  if (page.cursor) {
+    lines.push(
+      `[Next page →](${baseUrl}/links?url=${encodeURIComponent(url)}&cursor=${encodeURIComponent(page.cursor)})`,
+    )
+  } else {
+    lines.push('*End of results.*')
+  }
+
+  return lines.join('\n')
+}
+
 // ─── Custom Feed ──────────────────────────────────────────────────────────────
 
 export function renderCustomFeed(

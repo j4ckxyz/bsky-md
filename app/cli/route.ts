@@ -39,6 +39,7 @@ No auth. No API key. Just HTTP.
   /profile/:handle/followers          Follower list
   /profile/:handle/following          Following list
   /search?q=:query                    Full-text post search
+  /links?url=:url                     Posts linking to a URL or domain
   /trending                           Trending topics right now
   /llms.txt                           Machine-readable API guide (for agents)
   /skill.md                           Agent skill file (Claude, Cursor, Windsurf…)

@@ -93,6 +93,12 @@ GET ${base}/trending
 \`\`\`
 Live list of trending topics with links to search each one.
 
+### Posts linking to a URL or domain
+\`\`\`
+GET ${base}/links?url=:url
+\`\`\`
+All public posts that link to a given URL or domain (e.g. \`?url=theverge.com\` or \`?url=https://example.com/article\`).
+
 ## Parsing bsky.app URLs
 
 When the user pastes a bsky.app URL, convert it:

@@ -129,6 +129,21 @@ Example: ${base}/search?q="open social web"&limit=10
 
 ---
 
+### GET /links?url=:url
+Find all public Bluesky posts that link to a given URL or domain.
+
+Query parameters:
+- url    — full URL (e.g. https://example.com/article) or bare domain (e.g. example.com) (required)
+- cursor — pagination cursor (optional)
+- limit  — 1–100, default 50
+
+Response: matching posts with author, text, embeds, engagement stats, and pagination.
+
+Example: ${base}/links?url=theverge.com
+Example: ${base}/links?url=https://example.com/some-article
+
+---
+
 ## Embed types returned in posts
 
 - Images       — inline Markdown image syntax with alt text + raw CDN URL
@@ -169,6 +184,7 @@ Error responses use Content-Type: text/plain.
 - Fetch ${base}/profile/:handle/posts to read recent posts; follow "Next page →" for more.
 - Fetch ${base}/profile/:handle/post/:rkey/thread to get a complete multi-post thread.
 - Fetch ${base}/search?q=TOPIC to discover posts about a topic without knowing any handles.
+- Fetch ${base}/links?url=DOMAIN to find all posts linking to a website or specific URL.
 - All responses are plain Markdown — strip formatting or feed directly into context windows.
 - No rate limiting is imposed by this API, but Bluesky's public API may throttle heavy use.
 `

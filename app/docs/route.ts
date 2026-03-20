@@ -117,6 +117,20 @@ Full-text search across all public Bluesky posts. Supports quoted phrases and bo
 
 ---
 
+### Links
+
+\`\`\`
+GET ${base}/links?url=<url-or-domain>
+GET ${base}/links?url=<url-or-domain>&cursor=<cursor>&limit=<1-100>
+\`\`\`
+
+Find all public Bluesky posts that link to a given URL or domain.
+
+**Example:** [${base}/links?url=theverge.com](${base}/links?url=theverge.com)
+**Example:** [${base}/links?url=https://example.com/article](${base}/links?url=https%3A%2F%2Fexample.com%2Farticle)
+
+---
+
 ## Embed types
 
 | Type | Rendered as |

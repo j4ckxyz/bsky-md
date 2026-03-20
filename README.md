@@ -17,6 +17,7 @@ Fetch any public Bluesky content as clean, portable Markdown. No auth, no API ke
 | `GET /profile/:handle/followers` | Follower list |
 | `GET /profile/:handle/following` | Following list |
 | `GET /search?q=:query` | Full-text post search |
+| `GET /links?url=:url` | Posts linking to a URL or domain |
 | `GET /trending` | Trending topics right now |
 | `GET /llms.txt` | Machine-readable API guide for agents |
 
