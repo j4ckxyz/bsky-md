@@ -28,6 +28,42 @@ def load_font(candidates: list[str], size: int) -> ImageFont.FreeTypeFont | Imag
     return ImageFont.load_default()
 
 
+def wrap_text(
+    draw: ImageDraw.ImageDraw,
+    text: str,
+    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+    max_width: int,
+    max_lines: int | None = None,
+) -> list[str]:
+    words = text.split()
+    if not words:
+        return []
+
+    lines: list[str] = []
+    current = words[0]
+
+    for word in words[1:]:
+        trial = f"{current} {word}"
+        if draw.textlength(trial, font=font) <= max_width:
+            current = trial
+            continue
+
+        lines.append(current)
+        current = word
+
+    lines.append(current)
+
+    if max_lines is None or len(lines) <= max_lines:
+        return lines
+
+    clamped = lines[:max_lines]
+    last = clamped[-1]
+    while last and draw.textlength(f"{last}...", font=font) > max_width:
+        last = last.rsplit(" ", 1)[0] if " " in last else last[:-1]
+    clamped[-1] = f"{last}..." if last else "..."
+    return clamped
+
+
 def main() -> None:
     out_path = Path(__file__).resolve().parent / "og-card.png"
 
@@ -138,7 +174,11 @@ def main() -> None:
         "Minimal, terminal-native output for profiles, posts, threads, "
         "feeds, links, search, and trending topics."
     )
-    draw.text((head_x, head_y + 100), body, fill=text_soft, font=mono_small)
+    body_lines = wrap_text(draw, body, mono_small, max_width=card_w - 108, max_lines=2)
+    body_y = head_y + 100
+    for body_line in body_lines:
+        draw.text((head_x, body_y), body_line, fill=text_soft, font=mono_small)
+        body_y += 24
 
     # Command block
     block_x = head_x
