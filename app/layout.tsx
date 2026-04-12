@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     siteName: 'bsky.md',
     images: [
       {
-        url: `${BASE}/og.png`,
+        url: `${BASE}/og-card.png`,
         width: 1200,
         height: 630,
         alt: 'bsky.md — Bluesky as Markdown',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'bsky.md — Bluesky as Markdown',
     description: 'Fetch any public Bluesky content as clean, portable Markdown. No auth, no API key.',
-    images: [`${BASE}/og.png`],
+    images: [`${BASE}/og-card.png`],
   },
 }
 
