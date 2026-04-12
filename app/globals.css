@@ -17,9 +17,9 @@
   --text-dim: oklch(43.5% 0.008 250);
   --text-muted: oklch(53.8% 0.008 250);
   --danger: oklch(56% 0.2 26);
-  --blue-accent: oklch(59% 0.148 254);
-  --blue-accent-soft: oklch(76% 0.07 252);
-  --blue-glow: oklch(64% 0.13 254 / 0.22);
+  --blue-accent: oklch(58% 0.22 257);
+  --blue-accent-soft: oklch(72% 0.15 255);
+  --blue-glow: oklch(60% 0.22 256 / 0.35);
 
   --radius-xs: 6px;
   --radius-sm: 8px;
@@ -47,9 +47,9 @@
     --text-dim: oklch(73.2% 0.005 250);
     --text-muted: oklch(61.2% 0.006 250);
     --danger: oklch(69% 0.18 27);
-    --blue-accent: oklch(72% 0.13 253);
-    --blue-accent-soft: oklch(83% 0.06 252);
-    --blue-glow: oklch(72% 0.15 252 / 0.24);
+    --blue-accent: oklch(74% 0.18 255);
+    --blue-accent-soft: oklch(84% 0.12 254);
+    --blue-glow: oklch(73% 0.2 255 / 0.42);
   }
 }
 
@@ -69,17 +69,17 @@ body {
   background:
     radial-gradient(circle at 12% -8%, color-mix(in oklch, var(--line-strong) 26%, transparent), transparent 52%),
     radial-gradient(circle at 90% 0%, color-mix(in oklch, var(--line-strong) 22%, transparent), transparent 44%),
-    radial-gradient(circle at 56% -18%, color-mix(in oklch, var(--blue-accent) 20%, transparent), transparent 46%),
+    radial-gradient(circle at 56% -18%, color-mix(in oklch, var(--blue-accent) 34%, transparent), transparent 47%),
     var(--bg);
 }
 
 ::selection {
-  background: var(--text);
-  color: var(--bg);
+  background: color-mix(in oklch, var(--blue-accent) 68%, var(--text) 32%);
+  color: var(--surface);
 }
 
 :focus-visible {
-  outline: 2px solid var(--text);
+  outline: 2px solid color-mix(in oklch, var(--blue-accent) 70%, var(--text) 30%);
   outline-offset: 2px;
 }
 

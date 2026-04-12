@@ -79,7 +79,7 @@
 }
 
 .logoMark {
-  color: color-mix(in oklch, var(--text-muted) 70%, var(--blue-accent) 30%);
+  color: color-mix(in oklch, var(--text-muted) 52%, var(--blue-accent) 48%);
   font-family: var(--mono);
   font-size: 0.9rem;
 }
@@ -100,7 +100,7 @@
 }
 
 .navLinks a:hover {
-  color: var(--text);
+  color: color-mix(in oklch, var(--text) 72%, var(--blue-accent) 28%);
 }
 
 .hero {
@@ -113,7 +113,7 @@
 
 .kicker {
   font-size: 0.72rem;
-  color: color-mix(in oklch, var(--text-muted) 78%, var(--blue-accent) 22%);
+  color: color-mix(in oklch, var(--text-muted) 58%, var(--blue-accent) 42%);
   font-family: var(--mono);
   text-transform: uppercase;
   letter-spacing: 0.17em;
@@ -134,7 +134,7 @@
   content: '_';
   font-family: var(--mono);
   margin-left: 8px;
-  color: var(--text-muted);
+  color: color-mix(in oklch, var(--text-muted) 40%, var(--blue-accent) 60%);
   animation: pulseCursor 1.15s steps(1, end) infinite;
 }
 
@@ -199,11 +199,11 @@
   font-size: 0.66rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  border: 1px dashed color-mix(in oklch, var(--line-strong) 72%, var(--blue-accent) 28%);
+  border: 1px dashed color-mix(in oklch, var(--line-strong) 58%, var(--blue-accent) 42%);
   padding: 4px 10px;
   border-radius: 999px;
   background: color-mix(in oklch, var(--surface) 78%, transparent);
-  color: color-mix(in oklch, var(--text-muted) 76%, var(--blue-accent) 24%);
+  color: color-mix(in oklch, var(--text-muted) 56%, var(--blue-accent) 44%);
   pointer-events: none;
 }
 
@@ -221,13 +221,17 @@
   letter-spacing: 0.07em;
   text-transform: uppercase;
   cursor: pointer;
-  box-shadow: 0 0 0 0 var(--blue-glow);
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--blue-accent) 16%, transparent),
+    0 0 0 0 var(--blue-glow);
   transition: transform 120ms ease, opacity 120ms ease, box-shadow 180ms ease;
 }
 
 .convertBtn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px -16px var(--blue-glow);
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--blue-accent) 22%, transparent),
+    0 14px 30px -18px var(--blue-glow);
 }
 
 .convertBtn:active {
@@ -256,9 +260,9 @@
 }
 
 .pill:hover {
-  color: var(--text);
-  border-color: var(--line-strong);
-  background: var(--surface-2);
+  color: color-mix(in oklch, var(--text) 74%, var(--blue-accent) 26%);
+  border-color: color-mix(in oklch, var(--line-strong) 56%, var(--blue-accent) 44%);
+  background: color-mix(in oklch, var(--surface-2) 88%, var(--blue-accent) 12%);
 }
 
 .resultSection,
@@ -291,7 +295,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    color-mix(in oklch, var(--blue-accent-soft) 50%, transparent),
+    color-mix(in oklch, var(--blue-accent-soft) 78%, transparent),
     transparent
   );
 }
@@ -308,14 +312,14 @@
 }
 
 .resultLabel {
-  border: 1px solid color-mix(in oklch, var(--line-strong) 72%, var(--blue-accent) 28%);
+  border: 1px solid color-mix(in oklch, var(--line-strong) 52%, var(--blue-accent) 48%);
   border-radius: 999px;
   padding: 4px 10px;
   font-family: var(--mono);
   font-size: 0.66rem;
   letter-spacing: 0.11em;
   text-transform: uppercase;
-  color: color-mix(in oklch, var(--text-muted) 80%, var(--blue-accent) 20%);
+  color: color-mix(in oklch, var(--text-muted) 56%, var(--blue-accent) 44%);
   white-space: nowrap;
 }
 
@@ -355,9 +359,9 @@
 }
 
 .actionBtn:hover {
-  border-color: var(--line-strong);
-  color: var(--text);
-  background: var(--surface-2);
+  border-color: color-mix(in oklch, var(--line-strong) 52%, var(--blue-accent) 48%);
+  color: color-mix(in oklch, var(--text) 72%, var(--blue-accent) 28%);
+  background: color-mix(in oklch, var(--surface-2) 86%, var(--blue-accent) 14%);
 }
 
 .actionBtnSuccess {
@@ -578,8 +582,8 @@
 }
 
 .card:hover {
-  border-color: var(--line-strong);
-  background: var(--surface-2);
+  border-color: color-mix(in oklch, var(--line-strong) 62%, var(--blue-accent) 38%);
+  background: color-mix(in oklch, var(--surface-2) 92%, var(--blue-accent) 8%);
 }
 
 .cardBadge {
@@ -588,12 +592,12 @@
   height: 20px;
   align-items: center;
   justify-content: center;
-  border: 1px solid color-mix(in oklch, var(--line-strong) 76%, var(--blue-accent) 24%);
+  border: 1px solid color-mix(in oklch, var(--line-strong) 54%, var(--blue-accent) 46%);
   border-radius: 999px;
   font-family: var(--mono);
   font-size: 0.61rem;
   text-transform: uppercase;
-  color: color-mix(in oklch, var(--text-muted) 82%, var(--blue-accent) 18%);
+  color: color-mix(in oklch, var(--text-muted) 58%, var(--blue-accent) 42%);
   letter-spacing: 0.08em;
 }
 
@@ -644,13 +648,13 @@
   align-items: center;
   color: var(--text);
   text-decoration: none;
-  border-bottom: 1px dashed color-mix(in oklch, var(--line-strong) 70%, var(--blue-accent) 30%);
+  border-bottom: 1px dashed color-mix(in oklch, var(--line-strong) 48%, var(--blue-accent) 52%);
   font-size: 0.78rem;
 }
 
 .agentSkillsLink:hover,
 .agentRawLink:hover {
-  color: color-mix(in oklch, var(--text) 70%, var(--blue-accent) 30%);
+  color: color-mix(in oklch, var(--text) 56%, var(--blue-accent) 44%);
 }
 
 .skillCopyBtn {
