@@ -61,7 +61,7 @@
   --text: oklch(18% 0.006 250);
   --text-soft: oklch(31.2% 0.007 250);
   --text-dim: oklch(44.2% 0.008 250);
-  --text-muted: oklch(54.2% 0.008 250);
+  --text-muted: oklch(52.2% 0.008 250);
   --danger: oklch(56% 0.2 26);
   --blue-accent: oklch(58% 0.22 257);
   --blue-accent-soft: oklch(72% 0.15 255);
@@ -79,7 +79,7 @@
     --text: oklch(18% 0.006 250);
     --text-soft: oklch(31.2% 0.007 250);
     --text-dim: oklch(44.2% 0.008 250);
-    --text-muted: oklch(54.2% 0.008 250);
+    --text-muted: oklch(52.2% 0.008 250);
     --danger: oklch(56% 0.2 26);
     --blue-accent: oklch(58% 0.22 257);
     --blue-accent-soft: oklch(72% 0.15 255);

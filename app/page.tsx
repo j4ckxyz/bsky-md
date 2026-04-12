@@ -141,6 +141,7 @@ export default function Home() {
 
   // Live type detection as user types
   const detected = input.trim() ? parseBskyInput(input) : null
+  const canRun = input.trim().length > 0 && !loading
 
   const getPath = useCallback((p: Parsed, mode: 'post' | 'thread') => {
     if (p.isPost && mode === 'thread') return p.path + '/thread'
@@ -176,10 +177,11 @@ export default function Home() {
   )
 
   const handleConvert = useCallback(() => {
+    if (loading) return
     const p = parseBskyInput(input)
     if (!p) return
     run(p, viewMode)
-  }, [input, viewMode, run])
+  }, [input, viewMode, run, loading])
 
   const handleQuick = useCallback(
     (path: string) => {
@@ -300,8 +302,12 @@ export default function Home() {
           for copy, curl, or coding agents.
         </p>
 
+        <label htmlFor="bsky-input" className={s.inputLabel}>
+          Bluesky URL, handle, hashtag, or search query
+        </label>
         <div className={s.inputWrapper}>
           <input
+            id="bsky-input"
             className={s.input}
             type="text"
             placeholder="bsky.app/profile/... | post URL | #hashtag | search"
@@ -313,14 +319,14 @@ export default function Home() {
             autoComplete="off"
           />
           {detected && <span className={s.detectedBadge}>{detected.label}</span>}
-          <button className={s.convertBtn} onClick={handleConvert}>
-            Run
+          <button type="button" className={s.convertBtn} onClick={handleConvert} disabled={!canRun}>
+            {loading ? 'Running' : 'Run'}
           </button>
         </div>
 
         <div className={s.pills}>
           {QUICK_LINKS.map((ql) => (
-            <button key={ql.path} className={s.pill} onClick={() => handleQuick(ql.path)}>
+            <button type="button" key={ql.path} className={s.pill} onClick={() => handleQuick(ql.path)}>
               {ql.label}
             </button>
           ))}
@@ -335,6 +341,7 @@ export default function Home() {
               <code className={s.resultUrl}>{activePath}</code>
               <div className={s.resultActions}>
                 <button
+                  type="button"
                   className={`${s.actionBtn} ${copiedUrl ? s.actionBtnSuccess : ''}`}
                   onClick={copyUrl}
                 >
@@ -354,14 +361,18 @@ export default function Home() {
             {parsed.isPost && (
               <div className={s.toggle}>
                 <button
+                  type="button"
                   className={`${s.toggleBtn} ${viewMode === 'thread' ? s.toggleActive : ''}`}
                   onClick={() => handleViewToggle('thread')}
+                  aria-pressed={viewMode === 'thread'}
                 >
                   Full Thread
                 </button>
                 <button
+                  type="button"
                   className={`${s.toggleBtn} ${viewMode === 'post' ? s.toggleActive : ''}`}
                   onClick={() => handleViewToggle('post')}
+                  aria-pressed={viewMode === 'post'}
                 >
                   Single Post
                 </button>
@@ -372,6 +383,7 @@ export default function Home() {
               <div className={s.previewToolbar}>
                 <span className={s.charCount}>{fmtBytes(charCount)}</span>
                 <button
+                  type="button"
                   className={`${s.actionBtn} ${copiedMd ? s.actionBtnSuccess : ''}`}
                   onClick={copyMarkdown}
                 >
@@ -381,13 +393,13 @@ export default function Home() {
             )}
 
             {loading && (
-              <div className={s.previewLoading}>
+              <div className={s.previewLoading} role="status" aria-live="polite">
                 <span className={s.spinner} />
                 Fetching...
               </div>
             )}
             {!loading && error && (
-              <pre className={`${s.preview} ${s.previewError}`}>{error}</pre>
+              <pre className={`${s.preview} ${s.previewError}`} role="alert">{error}</pre>
             )}
             {!loading && markdown && (
               <pre className={s.preview}>{markdown}</pre>
@@ -416,7 +428,7 @@ export default function Home() {
       </div>
 
       <section className={s.terminalSection}>
-        <p className={s.sectionTitle}>Terminal workflow</p>
+        <h2 className={s.sectionTitle}>Terminal workflow</h2>
         <p className={s.terminalSubtitle}>
           Use <code>curl</code> directly and pipe output to any terminal renderer, script, or coding agent.
         </p>
@@ -455,7 +467,7 @@ export default function Home() {
       </section>
 
       <section className={s.endpointsSection}>
-        <p className={s.sectionTitle}>All Endpoints</p>
+        <h2 className={s.sectionTitle}>All Endpoints</h2>
         <div className={s.grid}>
           {ENDPOINTS.map((ep) => (
             <a key={ep.path} className={s.card} href={ep.example} target="_blank" rel="noopener noreferrer">
@@ -468,7 +480,7 @@ export default function Home() {
       </section>
 
       <section className={s.agentSection}>
-        <p className={s.sectionTitle}>Add to your coding agent</p>
+        <h2 className={s.sectionTitle}>Add to your coding agent</h2>
         <div className={s.agentCard}>
           <div className={s.agentHeader}>
             <div>
@@ -486,6 +498,7 @@ export default function Home() {
               </a>
             </div>
             <button
+              type="button"
               className={`${s.skillCopyBtn} ${copiedSkill ? s.skillCopyBtnDone : ''}`}
               onClick={copySkill}
               disabled={!skillMd}

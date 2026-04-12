@@ -43,7 +43,7 @@
     linear-gradient(to bottom, color-mix(in oklch, var(--line) 72%, transparent) 1px, transparent 1px);
   background-size: 30px 30px;
   opacity: 0.11;
-  mask-image: radial-gradient(circle at 50% 36%, #000 38%, transparent 84%);
+  mask-image: radial-gradient(circle at 50% 36%, black 38%, transparent 84%);
 }
 
 .header {
@@ -107,8 +107,8 @@
 }
 
 .themeBtn {
-  height: 28px;
-  min-width: 54px;
+  min-height: 34px;
+  min-width: 58px;
   border: 1px solid transparent;
   background: transparent;
   color: var(--text-dim);
@@ -124,6 +124,15 @@
   color: color-mix(in oklch, var(--text) 72%, var(--blue-accent) 28%);
 }
 
+.themeBtn:active {
+  opacity: 0.84;
+}
+
+.themeBtn:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--blue-accent) 70%, var(--text) 30%);
+  outline-offset: 2px;
+}
+
 .themeBtnActive {
   background: var(--surface-2);
   border-color: color-mix(in oklch, var(--line-strong) 58%, var(--blue-accent) 42%);
@@ -132,6 +141,8 @@
 
 .navLinks a {
   color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
   font-size: 0.78rem;
   letter-spacing: 0.08em;
@@ -143,12 +154,32 @@
   color: color-mix(in oklch, var(--text) 72%, var(--blue-accent) 28%);
 }
 
+.navLinks a:active {
+  opacity: 0.82;
+}
+
+.navLinks a:focus-visible {
+  border-radius: var(--radius-xs);
+}
+
 .hero {
   width: min(1120px, 100% - 48px);
   margin: 0 auto;
   padding: clamp(56px, 9vw, 100px) 0 18px;
   position: relative;
   animation: rise 360ms var(--ease-out);
+}
+
+.inputLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .kicker {
@@ -230,6 +261,11 @@
   background: var(--surface-2);
 }
 
+.input:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
 .detectedBadge {
   position: absolute;
   right: 122px;
@@ -248,8 +284,8 @@
 }
 
 .convertBtn {
-  min-width: 108px;
-  height: 56px;
+  min-width: 112px;
+  min-height: 56px;
   padding: 0 22px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-md);
@@ -265,6 +301,18 @@
     0 0 0 1px color-mix(in oklch, var(--blue-accent) 16%, transparent),
     0 0 0 0 var(--blue-glow);
   transition: transform 120ms ease, opacity 120ms ease, box-shadow 180ms ease;
+}
+
+.convertBtn:disabled {
+  opacity: 0.54;
+  transform: none;
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--blue-accent) 12%, transparent);
+  cursor: not-allowed;
+}
+
+.convertBtn:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--blue-accent) 70%, var(--text) 30%);
+  outline-offset: 2px;
 }
 
 .convertBtn:hover {
@@ -291,7 +339,7 @@
   background: var(--surface);
   color: var(--text-dim);
   border-radius: 999px;
-  height: 33px;
+  min-height: 36px;
   padding: 0 13px;
   font-family: var(--mono);
   font-size: 0.72rem;
@@ -303,6 +351,11 @@
   color: color-mix(in oklch, var(--text) 74%, var(--blue-accent) 26%);
   border-color: color-mix(in oklch, var(--line-strong) 56%, var(--blue-accent) 44%);
   background: color-mix(in oklch, var(--surface-2) 88%, var(--blue-accent) 12%);
+}
+
+.pill:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--blue-accent) 70%, var(--text) 30%);
+  outline-offset: 2px;
 }
 
 .resultSection,
@@ -381,7 +434,7 @@
 }
 
 .actionBtn {
-  height: 30px;
+  min-height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -404,6 +457,11 @@
   background: color-mix(in oklch, var(--surface-2) 86%, var(--blue-accent) 14%);
 }
 
+.actionBtn:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--blue-accent) 70%, var(--text) 30%);
+  outline-offset: 2px;
+}
+
 .actionBtnSuccess {
   background: var(--text);
   color: var(--bg);
@@ -418,7 +476,7 @@
 }
 
 .toggleBtn {
-  height: 30px;
+  min-height: 34px;
   border: 1px solid transparent;
   background: transparent;
   color: var(--text-dim);
@@ -432,6 +490,11 @@
 .toggleBtn:hover {
   border-color: var(--line);
   color: var(--text);
+}
+
+.toggleBtn:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--blue-accent) 70%, var(--text) 30%);
+  outline-offset: 2px;
 }
 
 .toggleActive {
@@ -452,9 +515,9 @@
 }
 
 .charCount {
-  color: var(--text-muted);
+  color: var(--text-dim);
   font-family: var(--mono);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -518,7 +581,7 @@
 
 .infoKey {
   font-family: var(--mono);
-  font-size: 0.64rem;
+  font-size: 0.68rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -541,7 +604,7 @@
   color: var(--text-muted);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   margin-bottom: 12px;
 }
 
@@ -629,13 +692,13 @@
 .cardBadge {
   display: inline-flex;
   min-width: 36px;
-  height: 20px;
+  min-height: 24px;
   align-items: center;
   justify-content: center;
   border: 1px solid color-mix(in oklch, var(--line-strong) 54%, var(--blue-accent) 46%);
   border-radius: 999px;
   font-family: var(--mono);
-  font-size: 0.61rem;
+  font-size: 0.66rem;
   text-transform: uppercase;
   color: color-mix(in oklch, var(--text-muted) 58%, var(--blue-accent) 42%);
   letter-spacing: 0.08em;
@@ -697,9 +760,19 @@
   color: color-mix(in oklch, var(--text) 56%, var(--blue-accent) 44%);
 }
 
+.agentSkillsLink:active,
+.agentRawLink:active {
+  opacity: 0.82;
+}
+
+.agentSkillsLink:focus-visible,
+.agentRawLink:focus-visible {
+  border-radius: var(--radius-xs);
+}
+
 .skillCopyBtn {
-  min-width: 134px;
-  height: 37px;
+  min-width: 140px;
+  min-height: 40px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   background: var(--text);
@@ -714,6 +787,11 @@
 .skillCopyBtn:disabled {
   opacity: 0.45;
   cursor: default;
+}
+
+.skillCopyBtn:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--blue-accent) 70%, var(--text) 30%);
+  outline-offset: 2px;
 }
 
 .skillCopyBtnDone {
@@ -745,8 +823,8 @@
 }
 
 .agentFooterHint {
-  color: var(--text-muted);
-  font-size: 0.74rem;
+  color: var(--text-dim);
+  font-size: 0.76rem;
 }
 
 .footer {
@@ -764,6 +842,8 @@
 
 .footerLinks a {
   color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
   font-size: 0.76rem;
   text-transform: uppercase;
@@ -774,12 +854,42 @@
   color: var(--text);
 }
 
+.footerLinks a:active {
+  opacity: 0.82;
+}
+
+.footerLinks a:focus-visible {
+  border-radius: var(--radius-xs);
+}
+
 .footerNote {
   margin-top: 16px;
-  color: var(--text-muted);
+  color: var(--text-dim);
   font-family: var(--mono);
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   letter-spacing: 0.05em;
+}
+
+@media (pointer: coarse) {
+  .themeBtn,
+  .convertBtn,
+  .pill,
+  .actionBtn,
+  .toggleBtn,
+  .skillCopyBtn,
+  .navLinks a,
+  .footerLinks a,
+  .agentSkillsLink,
+  .agentRawLink {
+    min-height: 44px;
+  }
+
+  .navLinks a,
+  .footerLinks a,
+  .agentSkillsLink,
+  .agentRawLink {
+    padding-inline: 10px;
+  }
 }
 
 @media (max-width: 980px) {
@@ -860,7 +970,7 @@
   }
 
   .themeBtn {
-    min-width: 48px;
+    min-width: 52px;
     padding: 0 8px;
   }
 
@@ -873,7 +983,7 @@
   }
 
   .pill {
-    height: 31px;
+    min-height: 36px;
     padding: 0 10px;
     font-size: 0.66rem;
   }
