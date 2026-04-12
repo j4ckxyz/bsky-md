@@ -1,59 +1,117 @@
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 :root {
-  --blue: #0085ff;
-  --blue-dark: #006ad4;
-  --blue-pale: #eff6ff;
-  --text: #0f172a;
-  --text-2: #475569;
-  --text-3: #94a3b8;
-  --bg: #ffffff;
-  --bg-2: #f8fafc;
-  --border: #e2e8f0;
-  --radius: 12px;
-  --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  --bg: oklch(96.9% 0.004 250);
+  --surface: oklch(99.2% 0.002 250);
+  --surface-2: oklch(94.8% 0.005 250);
+  --line: oklch(84.8% 0.006 250);
+  --line-strong: oklch(66.8% 0.01 250);
+  --text: oklch(17.6% 0.006 250);
+  --text-soft: oklch(30.8% 0.007 250);
+  --text-dim: oklch(43.5% 0.008 250);
+  --text-muted: oklch(53.8% 0.008 250);
+  --danger: oklch(56% 0.2 26);
+  --blue-accent: oklch(59% 0.148 254);
+  --blue-accent-soft: oklch(76% 0.07 252);
+  --blue-glow: oklch(64% 0.13 254 / 0.22);
+
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --mono: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  --sans: 'Manrope', 'Segoe UI', sans-serif;
+  --display: 'Bricolage Grotesque', 'Manrope', sans-serif;
+
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --blue: #4da6ff;
-    --blue-dark: #79bbff;
-    --blue-pale: #0c1e3a;
-    --text: #f1f5f9;
-    --text-2: #94a3b8;
-    --text-3: #475569;
-    --bg: #0d1117;
-    --bg-2: #161b22;
-    --border: #30363d;
+    --bg: oklch(11.4% 0.008 250);
+    --surface: oklch(14.6% 0.008 250);
+    --surface-2: oklch(18.3% 0.009 250);
+    --line: oklch(25.8% 0.009 250);
+    --line-strong: oklch(41.2% 0.01 250);
+    --text: oklch(95.2% 0.003 250);
+    --text-soft: oklch(86.2% 0.004 250);
+    --text-dim: oklch(73.2% 0.005 250);
+    --text-muted: oklch(61.2% 0.006 250);
+    --danger: oklch(69% 0.18 27);
+    --blue-accent: oklch(72% 0.13 253);
+    --blue-accent-soft: oklch(83% 0.06 252);
+    --blue-glow: oklch(72% 0.15 252 / 0.24);
   }
 }
 
 html {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-family: var(--sans);
   font-size: 16px;
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% -8%, color-mix(in oklch, var(--line-strong) 26%, transparent), transparent 52%),
+    radial-gradient(circle at 90% 0%, color-mix(in oklch, var(--line-strong) 22%, transparent), transparent 44%),
+    radial-gradient(circle at 56% -18%, color-mix(in oklch, var(--blue-accent) 20%, transparent), transparent 46%),
+    var(--bg);
+}
+
+::selection {
+  background: var(--text);
+  color: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--line-strong) 92%, transparent);
+  border-radius: 999px;
+  border: 2px solid var(--surface);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 a {
-  color: var(--blue);
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
+  color: var(--text);
 }
 
 button {
   font-family: inherit;
+  cursor: pointer;
 }
 
-::selection {
-  background: #bfdbfe;
-  color: #0f172a;
+code,
+pre {
+  font-family: var(--mono);
 }

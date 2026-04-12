@@ -86,11 +86,11 @@ const ENDPOINTS = [
 ]
 
 const QUICK_LINKS = [
-  { label: '🔥 Trending',     path: '/trending' },
-  { label: '👤 bsky.app',     path: '/profile/bsky.app' },
-  { label: '🌐 What\'s Hot',  path: '/profile/bsky.app/feed/whats-hot' },
-  { label: '#atproto',        path: '/search?q=%23atproto' },
-  { label: '📰 Tech',         path: '/search?q=tech' },
+  { label: '/trending', path: '/trending' },
+  { label: '@bsky.app', path: '/profile/bsky.app' },
+  { label: '/feed/whats-hot', path: '/profile/bsky.app/feed/whats-hot' },
+  { label: '#atproto', path: '/search?q=%23atproto' },
+  { label: 'search:tech', path: '/search?q=tech' },
 ]
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -201,15 +201,16 @@ export default function Home() {
 
   return (
     <div className={s.page}>
-      {/* ── Header ── */}
       <header className={s.header}>
         <div className={s.nav}>
           <a href="/" className={s.logo}>
-            🦋 bsky.md
+            <span className={s.logoMark} aria-hidden="true">&gt;</span>
+            bsky.md
           </a>
           <nav className={s.navLinks}>
             <a href="/trending">Trending</a>
             <a href="/llms.txt">llms.txt</a>
+            <a href="/cli">CLI</a>
             <a href="https://tangled.org/j4ck.xyz/bsky-md" target="_blank" rel="noopener noreferrer">
               Source
             </a>
@@ -217,19 +218,19 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ── Hero ── */}
       <section className={s.hero}>
-        <h1 className={s.title}>Bluesky, as Markdown.</h1>
+        <p className={s.kicker}>Terminal-native Bluesky export</p>
+        <h1 className={s.title}>Bluesky -&gt; Markdown</h1>
         <p className={s.subtitle}>
-          Paste any bsky.app URL — profile, post, feed, search, or hashtag — and get back clean,
-          portable Markdown instantly.
+          Paste any profile, post, feed, hashtag, or query and return clean plain-text Markdown ready
+          for copy, curl, or coding agents.
         </p>
 
         <div className={s.inputWrapper}>
           <input
             className={s.input}
             type="text"
-            placeholder="bsky.app/profile/...  ·  post URL  ·  #hashtag  ·  search term"
+            placeholder="bsky.app/profile/... | post URL | #hashtag | search"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleConvert()}
@@ -239,7 +240,7 @@ export default function Home() {
           />
           {detected && <span className={s.detectedBadge}>{detected.label}</span>}
           <button className={s.convertBtn} onClick={handleConvert}>
-            Convert →
+            Run
           </button>
         </div>
 
@@ -252,12 +253,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Result ── */}
       {(loading || markdown !== null || error !== null) && parsed && (
         <section className={s.resultSection} ref={resultRef}>
           <div className={s.resultCard}>
-
-            {/* Top bar: label · url · copy url · open */}
             <div className={s.resultBar}>
               <span className={s.resultLabel}>{parsed.label}</span>
               <code className={s.resultUrl}>{activePath}</code>
@@ -279,7 +277,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Post / Thread toggle */}
             {parsed.isPost && (
               <div className={s.toggle}>
                 <button
@@ -297,7 +294,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* Preview toolbar */}
             {!loading && markdown && (
               <div className={s.previewToolbar}>
                 <span className={s.charCount}>{fmtBytes(charCount)}</span>
@@ -305,16 +301,15 @@ export default function Home() {
                   className={`${s.actionBtn} ${copiedMd ? s.actionBtnSuccess : ''}`}
                   onClick={copyMarkdown}
                 >
-                  {copiedMd ? '✓ Copied!' : '📋 Copy Markdown'}
+                  {copiedMd ? '✓ Copied' : 'Copy Markdown'}
                 </button>
               </div>
             )}
 
-            {/* Content */}
             {loading && (
               <div className={s.previewLoading}>
                 <span className={s.spinner} />
-                Fetching…
+                Fetching...
               </div>
             )}
             {!loading && error && (
@@ -327,19 +322,29 @@ export default function Home() {
         </section>
       )}
 
-      {/* ── Info strip ── */}
-      <div className={s.infoStrip} style={{ marginTop: 32 }}>
-        <div className={s.infoItem}><span className={s.infoIcon}>🔓</span> No auth or API key</div>
-        <div className={s.infoItem}><span className={s.infoIcon}>🌍</span> Open CORS from any origin</div>
-        <div className={s.infoItem}><span className={s.infoIcon}>⚡</span> Edge-cached responses</div>
-        <div className={s.infoItem}><span className={s.infoIcon}>🤖</span> LLM-friendly plain text</div>
+      <div className={s.infoStrip}>
+        <div className={s.infoItem}>
+          <span className={s.infoKey}>Auth</span>
+          <span className={s.infoValue}>No API key needed</span>
+        </div>
+        <div className={s.infoItem}>
+          <span className={s.infoKey}>CORS</span>
+          <span className={s.infoValue}>Open from any origin</span>
+        </div>
+        <div className={s.infoItem}>
+          <span className={s.infoKey}>Cache</span>
+          <span className={s.infoValue}>Fast edge responses</span>
+        </div>
+        <div className={s.infoItem}>
+          <span className={s.infoKey}>Format</span>
+          <span className={s.infoValue}>LLM-safe plain markdown</span>
+        </div>
       </div>
 
-      {/* ── Terminal examples ── */}
       <section className={s.terminalSection}>
-        <p className={s.sectionTitle}>Works great in your terminal too</p>
+        <p className={s.sectionTitle}>Terminal workflow</p>
         <p className={s.terminalSubtitle}>
-          <code>curl</code> any endpoint and get plain Markdown back — pipe it to <code>glow</code>, your agent, or just read it.
+          Use <code>curl</code> directly and pipe output to any terminal renderer, script, or coding agent.
         </p>
         <div className={s.terminalBlock}>
           <div className={s.terminalBar}>
@@ -371,12 +376,11 @@ export default function Home() {
           ].join('\n')}</pre>
         </div>
         <p className={s.terminalHint}>
-          Tip: visiting this URL from <code>curl</code> or any terminal client automatically returns Markdown — no flags needed.
+          Tip: requests from terminal clients automatically return Markdown with no additional flags.
         </p>
       </section>
 
-      {/* ── Endpoints ── */}
-      <section className={s.endpointsSection} style={{ marginTop: 48 }}>
+      <section className={s.endpointsSection}>
         <p className={s.sectionTitle}>All Endpoints</p>
         <div className={s.grid}>
           {ENDPOINTS.map((ep) => (
@@ -389,14 +393,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Agent install ── */}
       <section className={s.agentSection}>
         <p className={s.sectionTitle}>Add to your coding agent</p>
         <div className={s.agentCard}>
           <div className={s.agentHeader}>
             <div>
               <p className={s.agentDesc}>
-                Copy this skill file and paste it into any coding agent — Claude, Cursor, Windsurf, Copilot, or any tool that accepts a system prompt or rules file.
+                Copy this skill file into Claude, Cursor, Windsurf, Copilot, or any agent that accepts
+                instruction files.
               </p>
               <a
                 className={s.agentSkillsLink}
@@ -412,7 +416,7 @@ export default function Home() {
               onClick={copySkill}
               disabled={!skillMd}
             >
-              {copiedSkill ? '✓ Copied!' : '📋 Copy skill.md'}
+              {copiedSkill ? '✓ Copied' : 'Copy skill.md'}
             </button>
           </div>
           <pre className={s.skillEmbed}>
@@ -429,8 +433,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className={s.footer} style={{ marginTop: 64 }}>
+      <footer className={s.footer}>
         <div className={s.footerLinks}>
           <a href="/trending">Trending</a>
           <a href="/llms.txt">llms.txt</a>
