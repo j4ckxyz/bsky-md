@@ -42,7 +42,7 @@
     linear-gradient(to right, color-mix(in oklch, var(--line) 72%, transparent) 1px, transparent 1px),
     linear-gradient(to bottom, color-mix(in oklch, var(--line) 72%, transparent) 1px, transparent 1px);
   background-size: 30px 30px;
-  opacity: 0.28;
+  opacity: 0.11;
   mask-image: radial-gradient(circle at 50% 36%, #000 38%, transparent 84%);
 }
 
@@ -64,6 +64,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .logo {
@@ -88,6 +94,40 @@
   display: flex;
   gap: clamp(12px, 2vw, 26px);
   align-items: center;
+}
+
+.themeSwitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--surface) 86%, transparent);
+  padding: 2px;
+}
+
+.themeBtn {
+  height: 28px;
+  min-width: 54px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-dim);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 10px;
+}
+
+.themeBtn:hover {
+  color: color-mix(in oklch, var(--text) 72%, var(--blue-accent) 28%);
+}
+
+.themeBtnActive {
+  background: var(--surface-2);
+  border-color: color-mix(in oklch, var(--line-strong) 58%, var(--blue-accent) 42%);
+  color: color-mix(in oklch, var(--text) 72%, var(--blue-accent) 28%);
 }
 
 .navLinks a {
@@ -756,10 +796,21 @@
   .nav {
     width: min(1120px, 100% - 28px);
     min-height: 58px;
+    flex-wrap: wrap;
+    row-gap: 10px;
+    padding: 10px 0;
+  }
+
+  .navRight {
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
   }
 
   .navLinks {
     gap: 11px;
+    flex-wrap: wrap;
   }
 
   .hero,
@@ -804,6 +855,15 @@
 }
 
 @media (max-width: 540px) {
+  .themeSwitch {
+    margin-left: auto;
+  }
+
+  .themeBtn {
+    min-width: 48px;
+    padding: 0 8px;
+  }
+
   .infoStrip {
     grid-template-columns: 1fr;
   }

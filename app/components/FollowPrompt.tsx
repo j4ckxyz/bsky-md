@@ -18,8 +18,14 @@ export default function FollowPrompt() {
   const [visible, setVisible] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
     try {
       if (localStorage.getItem(STORAGE_KEY)) return
     } catch {
@@ -28,7 +34,7 @@ export default function FollowPrompt() {
     // Delay so the page loads first
     const t = setTimeout(() => setVisible(true), 1800)
     return () => clearTimeout(t)
-  }, [])
+  }, [mounted])
 
   useEffect(() => {
     if (!visible) return
@@ -46,13 +52,13 @@ export default function FollowPrompt() {
     setTimeout(() => setVisible(false), 280)
   }
 
-  if (!visible) return null
+  if (!mounted || !visible) return null
 
   const displayName = profile?.displayName || 'jack'
   const handle = profile?.handle || 'j4ck.xyz'
 
   return (
-    <div className={`${s.card} ${leaving ? s.cardLeaving : ''}`} role="complementary" aria-label="Follow the creator">
+    <section className={`${s.card} ${leaving ? s.cardLeaving : ''}`} role="complementary" aria-label="Follow the creator">
       <div className={s.strip} />
       <div className={s.body}>
         <div className={s.header}>
@@ -65,14 +71,12 @@ export default function FollowPrompt() {
             <div className={s.name}>{displayName}</div>
             <div className={s.handle}>@{handle}</div>
           </div>
-          <button className={s.dismiss} onClick={dismiss} aria-label="Dismiss">
+          <button type="button" className={s.dismiss} onClick={dismiss} aria-label="Dismiss follow prompt">
             ✕
           </button>
         </div>
 
-        <p className={s.label}>
-          Built by jack — follow to hear about updates and new tools.
-        </p>
+        <p className={s.label}>Built by jack. Follow for updates and new tools.</p>
 
         <a
           href={FOLLOW_URL}
@@ -88,6 +92,6 @@ export default function FollowPrompt() {
           Follow on Bluesky
         </a>
       </div>
-    </div>
+    </section>
   )
 }

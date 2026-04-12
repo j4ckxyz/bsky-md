@@ -2,6 +2,35 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import s from './page.module.css'
+import FollowPrompt from './components/FollowPrompt'
+
+type ThemeSetting = 'system' | 'dark' | 'light'
+
+const THEME_KEY = 'bsky-md-theme'
+
+function isThemeSetting(value: string | null): value is ThemeSetting {
+  return value === 'system' || value === 'dark' || value === 'light'
+}
+
+function getStoredThemeSetting(): ThemeSetting {
+  if (typeof window === 'undefined') return 'system'
+  try {
+    const stored = localStorage.getItem(THEME_KEY)
+    if (isThemeSetting(stored)) return stored
+  } catch {
+    // no-op
+  }
+  return 'system'
+}
+
+function applyThemeSetting(setting: ThemeSetting) {
+  const root = document.documentElement
+  if (setting === 'system') {
+    root.removeAttribute('data-theme')
+    return
+  }
+  root.setAttribute('data-theme', setting)
+}
 
 // ── URL parser ────────────────────────────────────────────────────────────────
 
@@ -98,6 +127,7 @@ const QUICK_LINKS = [
 export default function Home() {
   const [input, setInput] = useState('')
   const [parsed, setParsed] = useState<Parsed | null>(null)
+  const [theme, setTheme] = useState<ThemeSetting>('system')
   const [viewMode, setViewMode] = useState<'post' | 'thread'>('thread')
   const [markdown, setMarkdown] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -196,6 +226,22 @@ export default function Home() {
     fetch('/skill.md').then(r => r.text()).then(setSkillMd).catch(() => {})
   }, [])
 
+  useEffect(() => {
+    const stored = getStoredThemeSetting()
+    setTheme(stored)
+    applyThemeSetting(stored)
+  }, [])
+
+  const setThemePreference = useCallback((next: ThemeSetting) => {
+    setTheme(next)
+    applyThemeSetting(next)
+    try {
+      localStorage.setItem(THEME_KEY, next)
+    } catch {
+      // no-op
+    }
+  }, [])
+
   const activePath = parsed ? getPath(parsed, parsed.isPost ? viewMode : 'post') : null
   const charCount = markdown ? markdown.length : 0
 
@@ -207,14 +253,42 @@ export default function Home() {
             <span className={s.logoMark} aria-hidden="true">&gt;</span>
             bsky.md
           </a>
-          <nav className={s.navLinks}>
-            <a href="/trending">Trending</a>
-            <a href="/llms.txt">llms.txt</a>
-            <a href="/cli">CLI</a>
-            <a href="https://tangled.org/j4ck.xyz/bsky-md" target="_blank" rel="noopener noreferrer">
-              Source
-            </a>
-          </nav>
+          <div className={s.navRight}>
+            <nav className={s.navLinks}>
+              <a href="/trending">Trending</a>
+              <a href="/llms.txt">llms.txt</a>
+              <a href="/cli">CLI</a>
+              <a href="https://tangled.org/j4ck.xyz/bsky-md" target="_blank" rel="noopener noreferrer">
+                Source
+              </a>
+            </nav>
+            <div className={s.themeSwitch} role="group" aria-label="Theme preference">
+              <button
+                type="button"
+                className={`${s.themeBtn} ${theme === 'system' ? s.themeBtnActive : ''}`}
+                onClick={() => setThemePreference('system')}
+                aria-pressed={theme === 'system'}
+              >
+                Auto
+              </button>
+              <button
+                type="button"
+                className={`${s.themeBtn} ${theme === 'dark' ? s.themeBtnActive : ''}`}
+                onClick={() => setThemePreference('dark')}
+                aria-pressed={theme === 'dark'}
+              >
+                Dark
+              </button>
+              <button
+                type="button"
+                className={`${s.themeBtn} ${theme === 'light' ? s.themeBtnActive : ''}`}
+                onClick={() => setThemePreference('light')}
+                aria-pressed={theme === 'light'}
+              >
+                Light
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -445,6 +519,8 @@ export default function Home() {
         </div>
         <p className={s.footerNote}>Content-Type: text/markdown · bsky.md</p>
       </footer>
+
+      <FollowPrompt />
     </div>
   )
 }
