@@ -102,7 +102,8 @@ function fmtBytes(n: number): string {
 const ENDPOINTS = [
   { path: '/profile/:handle',            desc: 'Bio, stats, avatar/banner',    example: '/profile/bsky.app' },
   { path: '/profile/:handle/posts',      desc: 'Recent posts (paginated)',      example: '/profile/bsky.app/posts' },
-  { path: '/profile/:handle/post/:rkey', desc: 'Single post with embeds',       example: '/profile/bsky.app/post/3lhreomsy5k2x' },
+  { path: '/profile/:handle/post/:rkey', desc: 'Post with parents/replies context by default if a reply', example: '/profile/bsky.app/post/3lhreomsy5k2x' },
+  { path: '/…/post/:rkey/single',        desc: 'Single post itself without parent/reply context', example: '/profile/bsky.app/post/3lhreomsy5k2x/single' },
   { path: '/…/post/:rkey/thread',        desc: 'Full self-reply thread',        example: '/profile/bsky.app/post/3lhreomsy5k2x/thread' },
   { path: '/profile/:handle/feed/:rkey', desc: 'Public custom feed',            example: '/profile/bsky.app/feed/whats-hot' },
   { path: '/profile/:handle/likes',      desc: 'Posts the user liked',          example: '/profile/bsky.app/likes' },

@@ -10,16 +10,6 @@ export async function GET(
   return handleRoute(async () => {
     const { handle, rkey } = await params
     const post = await getPost(handle, rkey)
-    const searchParams = req.nextUrl.searchParams
-    const isSingle = searchParams.get('single') === 'true' || searchParams.get('thread') === 'false'
-
-    if (post.isReply && !isSingle) {
-      const { getThread } = await import('@/lib/bsky')
-      const { renderThread } = await import('@/lib/markdown')
-      const thread = await getThread(handle, rkey)
-      const md = renderThread(thread, baseUrl(req))
-      return immutableMarkdownResponse(md)
-    }
     const md = renderPost(post, baseUrl(req))
     return immutableMarkdownResponse(md)
   })
