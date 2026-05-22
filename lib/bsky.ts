@@ -80,9 +80,17 @@ export interface SearchPage {
   hitsTotal?: number
 }
 
+export interface NestedReply {
+  post: PostData
+  replies: NestedReply[]
+}
+
 export interface ThreadData {
   root: PostData
   replies: PostData[]
+  parentChain?: PostData[]
+  replyTree?: NestedReply[]
+  isReplyThread?: boolean
 }
 
 export interface FeedPage {
@@ -159,6 +167,37 @@ function collectAuthorPosts(
 
   return acc
 }
+
+function collectParentPosts(node: AppBskyFeedDefs.ThreadViewPost): PostData[] {
+  const parents: PostData[] = []
+  let curr = node.parent
+  while (curr) {
+    if (AppBskyFeedDefs.isThreadViewPost(curr)) {
+      parents.push(postViewToPostData(curr.post))
+      curr = curr.parent
+    } else {
+      break
+    }
+  }
+  return parents.reverse()
+}
+
+function buildReplyTree(node: AppBskyFeedDefs.ThreadViewPost): NestedReply[] {
+  if (!node.replies || node.replies.length === 0) return []
+  const list = (node.replies as unknown[])
+    .filter(AppBskyFeedDefs.isThreadViewPost)
+    .map((r) => r as AppBskyFeedDefs.ThreadViewPost)
+
+  list.sort(
+    (a, b) => new Date(a.post.indexedAt).getTime() - new Date(b.post.indexedAt).getTime(),
+  )
+
+  return list.map((r) => ({
+    post: postViewToPostData(r.post),
+    replies: buildReplyTree(r),
+  }))
+}
+
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
@@ -327,17 +366,32 @@ export async function getTrending(): Promise<TrendingData> {
 export async function getThread(handle: string, rkey: string): Promise<ThreadData> {
   const did = await resolveDid(handle)
   const uri = `at://${did}/app.bsky.feed.post/${rkey}`
-  const res = await agent.getPostThread({ uri, depth: 1000, parentHeight: 0 })
+  const res = await agent.getPostThread({ uri, depth: 1000, parentHeight: 1000 })
 
   if (!AppBskyFeedDefs.isThreadViewPost(res.data.thread as unknown)) {
     throw Object.assign(new Error('Thread not found'), { status: 404 })
   }
 
-  const root = res.data.thread as AppBskyFeedDefs.ThreadViewPost
-  const authorDid = root.post.author.did
+  const threadNode = res.data.thread as AppBskyFeedDefs.ThreadViewPost
+
+  if (threadNode.parent && AppBskyFeedDefs.isThreadViewPost(threadNode.parent)) {
+    const parentChain = collectParentPosts(threadNode)
+    const rootPost = postViewToPostData(threadNode.post)
+    const replyTree = buildReplyTree(threadNode)
+
+    return {
+      root: rootPost,
+      replies: [],
+      parentChain,
+      replyTree,
+      isReplyThread: true,
+    }
+  }
+
+  const authorDid = threadNode.post.author.did
 
   // Collect all posts: start with root, then replies recursively
-  const all = collectAuthorPosts(root, authorDid)
+  const all = collectAuthorPosts(threadNode, authorDid)
   const [rootPost, ...replies] = all
 
   return { root: rootPost, replies }

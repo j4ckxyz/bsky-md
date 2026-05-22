@@ -7,7 +7,7 @@ import type {
   AppBskyEmbedVideo,
   AppBskyActorDefs,
 } from '@atproto/api'
-import type { Profile, PostData, ThreadData, FeedPage, EmbedView, ActorPage, SearchPage, TrendingData } from './bsky'
+import type { Profile, PostData, ThreadData, FeedPage, EmbedView, ActorPage, SearchPage, TrendingData, NestedReply } from './bsky'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -631,8 +631,97 @@ export function renderTrending(data: TrendingData, baseUrl: string): string {
 
 // ─── Thread ───────────────────────────────────────────────────────────────────
 
+function renderNestedReplies(replies: NestedReply[], depth = 1): string {
+  const lines: string[] = []
+  for (const reply of replies) {
+    const indent = '> '.repeat(depth)
+    const handle = reply.post.author.handle
+    const date = formatDate(reply.post.indexedAt)
+    const bskyUrl = bskyPostUrl(handle, reply.post.rkey)
+
+    lines.push(`${indent}`)
+    lines.push(`${indent}**[@${handle}](${bskyProfileUrl(handle)})** · [${date}](${bskyUrl})`)
+    
+    const body = richTextToMarkdown(reply.post.text, reply.post.facets)
+    if (body.trim()) {
+      lines.push(`${indent}`)
+      lines.push(body.split('\n').map(l => `${indent}${l}`).join('\n'))
+    }
+
+    if (reply.post.embed) {
+      const embedMd = renderEmbed(reply.post.embed, reply.post.author.did)
+      if (embedMd.trim()) {
+        lines.push(`${indent}`)
+        lines.push(embedMd.split('\n').map(l => `${indent}${l}`).join('\n'))
+      }
+    }
+
+    lines.push(`${indent}`)
+    lines.push(
+      `${indent}💬 ${formatNumber(reply.post.replyCount)} · 🔁 ${formatNumber(reply.post.repostCount)} · ❤️ ${formatNumber(reply.post.likeCount)}`
+    )
+
+    if (reply.replies.length > 0) {
+      lines.push(renderNestedReplies(reply.replies, depth + 1))
+    }
+  }
+  return lines.join('\n')
+}
+
 export function renderThread(thread: ThreadData, baseUrl: string): string {
   const handle = thread.root.author.handle
+
+  if (thread.isReplyThread) {
+    const lines: string[] = []
+
+    lines.push(`# Thread Context: Reply by [@${handle}](${bskyProfileUrl(handle)})`)
+    lines.push('')
+    lines.push(
+      `[Profile](${baseUrl}${apiProfileUrl(handle)}) · [View on Bluesky](${bskyPostUrl(handle, thread.root.rkey)})`,
+    )
+
+    // Render Parent Chain (Context)
+    if (thread.parentChain && thread.parentChain.length > 0) {
+      lines.push(hr())
+      lines.push('## 📜 Context (Parent Posts)')
+      lines.push('')
+
+      for (let i = 0; i < thread.parentChain.length; i++) {
+        const parent = thread.parentChain[i]
+        lines.push(`#### ─── Parent Post (${i + 1} of ${thread.parentChain.length}) ───`)
+        lines.push('')
+        lines.push(renderPostBlock(parent))
+        lines.push('')
+        if (i < thread.parentChain.length - 1) {
+          lines.push('↓')
+          lines.push('')
+        }
+      }
+      lines.push('↓')
+    }
+
+    // Render Main Requested Post
+    lines.push(hr())
+    lines.push('## 🎯 Requested Post')
+    lines.push('')
+    lines.push(renderPostBlock(thread.root))
+
+    // Render Nested Replies
+    if (thread.replyTree && thread.replyTree.length > 0) {
+      lines.push(hr())
+      lines.push('## 💬 Nested Replies')
+      lines.push('')
+      lines.push(renderNestedReplies(thread.replyTree, 1))
+    }
+
+    lines.push(hr())
+    lines.push(
+      `*Retrieved via [bsky-markdown-api](${baseUrl})*`,
+    )
+
+    return lines.join('\n')
+  }
+
   const lines: string[] = []
 
   lines.push(`# Thread by [@${handle}](${bskyProfileUrl(handle)})`)
