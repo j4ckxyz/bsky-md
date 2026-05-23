@@ -167,14 +167,36 @@ function renderEmbed(embed: EmbedView, authorDid: string): string {
       const text = (vr.value as { text?: string }).text ?? ''
       const facets = (vr.value as { facets?: AppBskyRichtextFacet.Main[] }).facets
       const formattedText = richTextToMarkdown(text, facets)
-      return [
-        `> **[@${handle}](${bskyProfileUrl(handle)})** · [${formatDate(vr.indexedAt)}](${bskyPostUrl(handle, rkey)})`,
-        `>`,
-        formattedText
-          .split('\n')
-          .map((l) => `> ${l}`)
-          .join('\n'),
-      ].join('\n')
+
+      const quoteLines: string[] = []
+      if (formattedText.trim()) {
+        quoteLines.push(formattedText)
+      }
+
+      // Render any media/embeds within the quoted post
+      const embeds = (vr as any).embeds as EmbedView[] | undefined
+      if (embeds && embeds.length > 0) {
+        const embedMds = embeds
+          .map((emb) => renderEmbed(emb, vr.author.did))
+          .filter(Boolean)
+        if (embedMds.length > 0) {
+          quoteLines.push(embedMds.join('\n\n'))
+        }
+      }
+
+      const replyCount = (vr as any).replyCount ?? 0
+      const repostCount = (vr as any).repostCount ?? 0
+      const likeCount = (vr as any).likeCount ?? 0
+      quoteLines.push(`💬 ${formatNumber(replyCount)} · 🔁 ${formatNumber(repostCount)} · ❤️ ${formatNumber(likeCount)}`)
+
+      const header = `**[@${handle}](${bskyProfileUrl(handle)})** · [${formatDate(vr.indexedAt)}](${bskyPostUrl(handle, rkey)})`
+      const body = quoteLines.join('\n\n')
+      const fullQuote = `${header}\n\n${body}`
+
+      return fullQuote
+        .split('\n')
+        .map((l) => `> ${l}`)
+        .join('\n')
     }
     return ''
   }
@@ -674,7 +696,11 @@ export function renderThread(thread: ThreadData, baseUrl: string): string {
   if (thread.isReplyThread) {
     const lines: string[] = []
 
-    lines.push(`# Thread Context: Reply by [@${handle}](${bskyProfileUrl(handle)})`)
+    if (thread.parentChain && thread.parentChain.length > 0) {
+      lines.push(`# Thread Context: Reply by [@${handle}](${bskyProfileUrl(handle)})`)
+    } else {
+      lines.push(`# Thread by [@${handle}](${bskyProfileUrl(handle)})`)
+    }
     lines.push('')
     lines.push(
       `[Profile](${baseUrl}${apiProfileUrl(handle)}) · [View on Bluesky](${bskyPostUrl(handle, thread.root.rkey)})`,
@@ -751,3 +777,269 @@ export function renderThread(thread: ThreadData, baseUrl: string): string {
 
   return lines.join('\n')
 }
+
+export function renderActorLists(handle: string, page: any, baseUrl: string): string {
+  const lines: string[] = []
+  lines.push(`# Lists by [@${handle}](${bskyProfileUrl(handle)})`)
+  lines.push('')
+  lines.push(`[Profile](${baseUrl}${apiProfileUrl(handle)})`)
+  lines.push('')
+  
+  if (page.lists.length === 0) {
+    lines.push(hr())
+    lines.push('*No lists found.*')
+    return lines.join('\n')
+  }
+  
+  for (const list of page.lists) {
+    lines.push(hr())
+    const rkey = list.uri.split('/').at(-1)
+    const listUrl = `${baseUrl}/profile/${handle}/list/${rkey}`
+    const bskyListUrl = `https://bsky.app/profile/${handle}/lists/${rkey}`
+    
+    lines.push(`## [${list.name}](${listUrl})`)
+    lines.push('')
+    if (list.description) {
+      lines.push(list.description)
+      lines.push('')
+    }
+    const purpose = list.purpose === 'app.bsky.graph.defs#modlist' ? 'Moderation List' : 'User List'
+    lines.push(`*Purpose: ${purpose}*`)
+    lines.push('')
+    lines.push(`[View List](${listUrl}) · [View on Bluesky](${bskyListUrl})`)
+  }
+  
+  lines.push(hr())
+  if (page.cursor) {
+    lines.push(`[Next page →](${baseUrl}/profile/${handle}/lists?cursor=${encodeURIComponent(page.cursor)})`)
+  } else {
+    lines.push('*End of lists.*')
+  }
+  
+  return lines.join('\n')
+}
+
+export function renderList(
+  handle: string,
+  rkey: string,
+  page: any,
+  baseUrl: string,
+): string {
+  const list = page.list
+  const creator = list.creator
+  const lines: string[] = []
+  
+  lines.push(`# List: ${list.name}`)
+  lines.push('')
+  if (list.description) {
+    lines.push(list.description)
+    lines.push('')
+  }
+  
+  lines.push(`**Created by:** [@${creator.handle}](${baseUrl}/profile/${creator.handle})`)
+  lines.push('')
+  
+  lines.push(`## Members (${formatNumber(page.items.length)})`)
+  lines.push('')
+  
+  if (page.items.length === 0) {
+    lines.push('*No members in this list.*')
+  } else {
+    for (const item of page.items) {
+      const member = item.subject
+      const displayName = member.displayName || member.handle
+      lines.push(`- **[${displayName}](${baseUrl}/profile/${member.handle})** · [@${member.handle}](${bskyProfileUrl(member.handle)})`)
+      if (member.description) {
+        lines.push(`  > ${member.description.split('\n')[0]}`)
+      }
+    }
+  }
+  
+  lines.push(hr())
+  if (page.cursor) {
+    lines.push(`[Next page →](${baseUrl}/profile/${handle}/list/${rkey}?cursor=${encodeURIComponent(page.cursor)})`)
+  } else {
+    lines.push('*End of members.*')
+  }
+  
+  return lines.join('\n')
+}
+
+export function renderStarterPack(
+  handle: string,
+  rkey: string,
+  page: any,
+  baseUrl: string,
+): string {
+  const sp = page.starterPack
+  const record = sp.record as { name: string; description?: string }
+  const creator = sp.creator
+  const lines: string[] = []
+  
+  lines.push(`# Starter Pack: ${record.name}`)
+  lines.push('')
+  if (record.description) {
+    lines.push(record.description)
+    lines.push('')
+  }
+  
+  lines.push(`**Created by:** [@${creator.handle}](${baseUrl}/profile/${creator.handle})`)
+  if (sp.joinedAllTimeCount !== undefined) {
+    lines.push(`**Total Joins:** ${formatNumber(sp.joinedAllTimeCount)}`)
+  }
+  lines.push('')
+  
+  lines.push(`## Members (${formatNumber(page.items.length)})`)
+  lines.push('')
+  
+  if (page.items.length === 0) {
+    lines.push('*No members found in this starter pack.*')
+  } else {
+    for (const item of page.items) {
+      const member = item.subject
+      const displayName = member.displayName || member.handle
+      lines.push(`- **[${displayName}](${baseUrl}/profile/${member.handle})** · [@${member.handle}](${bskyProfileUrl(member.handle)})`)
+      if (member.description) {
+        lines.push(`  > ${member.description.split('\n')[0]}`)
+      }
+    }
+  }
+  
+  lines.push(hr())
+  lines.push(`*Starter Pack retrieved via [bsky-markdown-api](${baseUrl})*`)
+  
+  return lines.join('\n')
+}
+
+export function renderQuotes(
+  handle: string,
+  rkey: string,
+  page: any,
+  baseUrl: string,
+): string {
+  const lines: string[] = []
+  
+  lines.push(`# Quotes of post by [@${handle}](${bskyProfileUrl(handle)})`)
+  lines.push('')
+  lines.push(`[Original Post](${baseUrl}/profile/${handle}/post/${rkey}) · [View on Bluesky](${bskyPostUrl(handle, rkey)})`)
+  lines.push('')
+  
+  if (page.posts.length === 0) {
+    lines.push(hr())
+    lines.push('*No quotes found.*')
+    return lines.join('\n')
+  }
+  
+  for (const post of page.posts) {
+    lines.push(hr())
+    lines.push(renderPostBlock(post))
+    lines.push('')
+    lines.push(
+      `[View post](${baseUrl}${apiPostUrl(post.author.handle, post.rkey)}) · [View thread](${baseUrl}${apiThreadUrl(post.author.handle, post.rkey)}) · [View on Bluesky](${bskyPostUrl(post.author.handle, post.rkey)})`,
+    )
+  }
+  
+  lines.push(hr())
+  if (page.cursor) {
+    lines.push(`[Next page →](${baseUrl}/profile/${handle}/post/${rkey}/quotes?cursor=${encodeURIComponent(page.cursor)})`)
+  } else {
+    lines.push('*End of quotes.*')
+  }
+  
+  return lines.join('\n')
+}
+
+export function renderActivity(
+  handle: string,
+  page: FeedPage,
+  baseUrl: string,
+): string {
+  const lines: string[] = []
+  
+  lines.push(`# Activity by [@${handle}](${bskyProfileUrl(handle)})`)
+  lines.push('')
+  lines.push(
+    `[Profile](${baseUrl}${apiProfileUrl(handle)}) · [View on Bluesky](${bskyProfileUrl(handle)})`,
+  )
+  
+  if (page.posts.length === 0) {
+    lines.push(hr())
+    lines.push('*No activity found.*')
+    return lines.join('\n')
+  }
+  
+  for (const post of page.posts) {
+    lines.push(hr())
+    lines.push(renderPostBlock(post))
+    lines.push('')
+    lines.push(
+      `[View post](${baseUrl}${apiPostUrl(post.author.handle, post.rkey)}) · [View thread](${baseUrl}${apiThreadUrl(post.author.handle, post.rkey)}) · [View on Bluesky](${bskyPostUrl(post.author.handle, post.rkey)})`,
+    )
+  }
+  
+  lines.push(hr())
+  if (page.cursor) {
+    lines.push(`[Next page →](${baseUrl}/profile/${handle}/activity?cursor=${encodeURIComponent(page.cursor)})`)
+  } else {
+    lines.push('*End of activity.*')
+  }
+  
+  return lines.join('\n')
+}
+
+export function renderAlsoLiked(
+  handle: string,
+  rkey: string,
+  posts: PostData[],
+  baseUrl: string,
+): string {
+  const lines: string[] = []
+  
+  lines.push(`# Posts also liked by people who liked post by [@${handle}](${bskyProfileUrl(handle)})`)
+  lines.push('')
+  lines.push(`[Original Post](${baseUrl}/profile/${handle}/post/${rkey}) · [View recommendations on foryou.club](https://foryou.club/also-liked?post=https://bsky.app/profile/${handle}/post/${rkey})`)
+  lines.push('')
+  
+  if (posts.length === 0) {
+    lines.push(hr())
+    lines.push('*No similar liked posts found on foryou.club.*')
+    return lines.join('\n')
+  }
+  
+  for (const post of posts) {
+    lines.push(hr())
+    lines.push(renderPostBlock(post))
+    lines.push('')
+    lines.push(
+      `[View post](${baseUrl}${apiPostUrl(post.author.handle, post.rkey)}) · [View thread](${baseUrl}${apiThreadUrl(post.author.handle, post.rkey)}) · [View on Bluesky](${bskyPostUrl(post.author.handle, post.rkey)})`,
+    )
+  }
+  
+  lines.push(hr())
+  lines.push('*End of recommendations.*')
+  
+  return lines.join('\n')
+}
+
+export function renderAlsoLikedSection(posts: PostData[], baseUrl: string): string {
+  if (posts.length === 0) return ''
+  
+  const lines: string[] = []
+  lines.push('---')
+  lines.push('')
+  lines.push('## 💖 Also Liked')
+  lines.push('')
+  lines.push('*Posts that people who liked this post also liked (via [foryou.club](https://foryou.club/also-liked)):*')
+  
+  for (const post of posts) {
+    lines.push(hr())
+    lines.push(renderPostBlock(post))
+    lines.push('')
+    lines.push(
+      `[View post](${baseUrl}${apiPostUrl(post.author.handle, post.rkey)}) · [View thread](${baseUrl}${apiThreadUrl(post.author.handle, post.rkey)}) · [View on Bluesky](${bskyPostUrl(post.author.handle, post.rkey)})`,
+    )
+  }
+  
+  return lines.join('\n')
+}
+

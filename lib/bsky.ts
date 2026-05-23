@@ -363,7 +363,7 @@ export async function getTrending(): Promise<TrendingData> {
   return { topics: data.topics ?? [] }
 }
 
-export async function getThread(handle: string, rkey: string): Promise<ThreadData> {
+export async function getThread(handle: string, rkey: string, full = false): Promise<ThreadData> {
   const did = await resolveDid(handle)
   const uri = `at://${did}/app.bsky.feed.post/${rkey}`
   const res = await agent.getPostThread({ uri, depth: 1000, parentHeight: 1000 })
@@ -374,8 +374,10 @@ export async function getThread(handle: string, rkey: string): Promise<ThreadDat
 
   const threadNode = res.data.thread as AppBskyFeedDefs.ThreadViewPost
 
-  if (threadNode.parent && AppBskyFeedDefs.isThreadViewPost(threadNode.parent)) {
-    const parentChain = collectParentPosts(threadNode)
+  if (full || (threadNode.parent && AppBskyFeedDefs.isThreadViewPost(threadNode.parent))) {
+    const parentChain = threadNode.parent && AppBskyFeedDefs.isThreadViewPost(threadNode.parent)
+      ? collectParentPosts(threadNode)
+      : undefined
     const rootPost = postViewToPostData(threadNode.post)
     const replyTree = buildReplyTree(threadNode)
 
@@ -395,4 +397,130 @@ export async function getThread(handle: string, rkey: string): Promise<ThreadDat
   const [rootPost, ...replies] = all
 
   return { root: rootPost, replies }
+}
+
+export async function getActorLists(
+  handle: string,
+  cursor?: string,
+  limit = 50,
+) {
+  const res = await agent.app.bsky.graph.getLists({
+    actor: handle,
+    cursor,
+    limit: Math.min(limit, 100),
+  })
+  return {
+    lists: res.data.lists,
+    cursor: res.data.cursor,
+  }
+}
+
+export async function getList(
+  handle: string,
+  rkey: string,
+  cursor?: string,
+  limit = 50,
+) {
+  const did = await resolveDid(handle)
+  const listUri = `at://${did}/app.bsky.graph.list/${rkey}`
+  const res = await agent.app.bsky.graph.getList({
+    list: listUri,
+    cursor,
+    limit: Math.min(limit, 100),
+  })
+  return {
+    list: res.data.list,
+    items: res.data.items,
+    cursor: res.data.cursor,
+  }
+}
+
+export async function getStarterPack(
+  handle: string,
+  rkey: string,
+) {
+  const did = await resolveDid(handle)
+  const starterPackUri = `at://${did}/app.bsky.graph.starterpack/${rkey}`
+  const res = await agent.app.bsky.graph.getStarterPack({
+    starterPack: starterPackUri,
+  })
+  
+  const starterPack = res.data.starterPack
+  
+  let items: any[] = []
+  if (starterPack.list) {
+    const listRes = await agent.app.bsky.graph.getList({
+      list: starterPack.list.uri,
+      limit: 100,
+    })
+    items = listRes.data.items
+  }
+  
+  return {
+    starterPack,
+    items,
+  }
+}
+
+export async function getQuotes(
+  handle: string,
+  rkey: string,
+  cursor?: string,
+  limit = 20,
+) {
+  const did = await resolveDid(handle)
+  const uri = `at://${did}/app.bsky.feed.post/${rkey}`
+  const res = await agent.app.bsky.feed.getQuotes({
+    uri,
+    cursor,
+    limit: Math.min(limit, 100),
+  })
+  
+  return {
+    posts: res.data.posts.map((post) => postViewToPostData(post)),
+    cursor: res.data.cursor,
+  }
+}
+
+export async function getActivity(
+  handle: string,
+  cursor?: string,
+  limit = 50,
+): Promise<FeedPage> {
+  const res = await agent.getAuthorFeed({
+    actor: handle,
+    cursor,
+    limit: Math.min(limit, 100),
+    filter: 'posts_with_replies',
+  })
+  
+  return {
+    posts: res.data.feed.map(({ post }) => postViewToPostData(post)),
+    cursor: res.data.cursor,
+  }
+}
+
+export async function getAlsoLiked(handle: string, rkey: string): Promise<PostData[]> {
+  try {
+    const did = await resolveDid(handle)
+    const targetUrl = `https://foryou.club/also-liked?post=https://bsky.app/profile/${did}/post/${rkey}`
+    
+    const res = await fetchWithTimeout(targetUrl)
+    if (!res.ok) return []
+    
+    const html = await res.text()
+    const matches = [...html.matchAll(/data-bluesky-uri=["'](at:\/\/[^"']+)["']/g)]
+    const uris = matches.map((m) => m[1])
+    
+    // Skip the first URI (the input post) and take the top 5 recommendations
+    const recommendedUris = uris.slice(1, 6)
+    
+    if (recommendedUris.length === 0) return []
+    
+    const postsRes = await agent.getPosts({ uris: recommendedUris })
+    return postsRes.data.posts.map((post) => postViewToPostData(post))
+  } catch (err) {
+    console.error('Error fetching also-liked recommendations:', err)
+    return []
+  }
 }

@@ -20,7 +20,20 @@ export async function GET(
       const md = renderThread(thread, baseUrl(req))
       return immutableMarkdownResponse(md)
     }
-    const md = renderPost(post, baseUrl(req))
+    
+    let md = renderPost(post, baseUrl(req))
+    
+    const showAlsoLiked = searchParams.get('also-liked') === 'true' || searchParams.get('alsoLiked') === 'true'
+    if (showAlsoLiked) {
+      const { getAlsoLiked } = await import('@/lib/bsky')
+      const { renderAlsoLikedSection } = await import('@/lib/markdown')
+      const alsoLikedPosts = await getAlsoLiked(handle, rkey)
+      const alsoLikedMd = renderAlsoLikedSection(alsoLikedPosts, baseUrl(req))
+      if (alsoLikedMd) {
+        md += '\n\n' + alsoLikedMd
+      }
+    }
+    
     return immutableMarkdownResponse(md)
   })
 }

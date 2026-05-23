@@ -56,16 +56,59 @@ Paginated list of original posts (no replies). Follow the "Next page →" link o
 
 ### Single post
 \`\`\`
-GET ${base}/profile/:handle/post/:rkey
+GET ${base}/profile/:handle/post/:rkey[?also-liked=true]
 \`\`\`
 :rkey is the last path segment of any bsky.app post URL.
 Returns body, images (with alt text + CDN URLs), video, external link card, quote post.
+Pass \`also-liked=true\` to append recommended posts that people who liked this post also liked (via [foryou.club](https://foryou.club/also-liked)).
 
-### Full thread
+### Posts also liked by the same people
 \`\`\`
-GET ${base}/profile/:handle/post/:rkey/thread
+GET ${base}/profile/:handle/post/:rkey/also-liked
 \`\`\`
-Root post + all self-replies from the same author, in chronological order.
+Returns a feed of recommended posts liked by people who liked this post (via recommendations from [foryou.club](https://foryou.club/also-liked)).
+
+### Thread
+\`\`\`
+GET ${base}/profile/:handle/post/:rkey/thread[?full=true]
+\`\`\`
+Returns thread context.
+- **Default**: Root post + replies from the same author, in chronological order.
+- **\`?full=true\`**: Bypasses author filtering to return the complete cross-author nested reply tree.
+
+### Who quoted this post
+\`\`\`
+GET ${base}/profile/:handle/post/:rkey/quotes[?cursor=&limit=]
+\`\`\`
+Returns a paginated list of all public posts that quote the specified post.
+
+### Actor combined activity
+\`\`\`
+GET ${base}/profile/:handle/activity[?cursor=&limit=]
+\`\`\`
+One endpoint returning the actor's combined timeline of posts, replies, and quotes.
+
+### Public Lists
+\`\`\`
+GET ${base}/profile/:handle/lists[?cursor=&limit=]
+GET ${base}/profile/:handle/list/:rkey[?cursor=&limit=]
+GET ${base}/list/:atUri[?cursor=&limit=]
+\`\`\`
+Fetch an actor's public lists, or details and members of a specific list.
+
+### Starter Packs
+\`\`\`
+GET ${base}/profile/:handle/starter-pack/:rkey
+GET ${base}/starter-pack/:atUri
+\`\`\`
+Fetch starter pack details and listed member profiles.
+
+### First-class AT URI resolver
+\`\`\`
+GET ${base}/at/:atUri
+GET ${base}/at?uri=:atUri
+\`\`\`
+Resolves any \`at://\` URI (posts, custom feeds, lists, starter packs) and redirects/renders it.
 
 ### Custom feed
 \`\`\`
@@ -87,10 +130,11 @@ GET ${base}/profile/:handle/following[?cursor=&limit=]
 
 ### Search
 \`\`\`
-GET ${base}/search?q=:query[&cursor=&limit=]
+GET ${base}/search?q=:query[&since=&until=&from=&lang=&min-likes=&cursor=&limit=]
 \`\`\`
 Full-text search across all public Bluesky posts.
-Supports quoted phrases: \`q="open social web"\`
+- **Advanced filters**: Filter by author (\`from=j4ck.xyz\`), date range (\`since=2026-05-01&until=2026-05-23\`), language (\`lang=en\`), and minimum engagement (\`min-likes=10\`).
+- Supports quoted phrases: \`q="open social web"\`
 
 ### Trending topics
 \`\`\`
@@ -113,6 +157,9 @@ When the user pastes a bsky.app URL, convert it:
 | /profile/:handle | /profile/:handle |
 | /profile/:handle/post/:rkey | /profile/:handle/post/:rkey |
 | /profile/:handle/feed/:rkey | /profile/:handle/feed/:rkey |
+| /profile/:handle/lists | /profile/:handle/lists |
+| /profile/:handle/lists/:rkey | /profile/:handle/list/:rkey |
+| /starter-pack/:handle/:rkey | /profile/:handle/starter-pack/:rkey |
 | /hashtag/:tag | /search?q=%23:tag |
 | /search?q=... | /search?q=... |
 
@@ -120,6 +167,7 @@ When the user pastes a bsky.app URL, convert it:
 
 - **:handle** — any of: \`user.bsky.social\`, custom domain (\`j4ck.xyz\`), or DID (\`did:plc:...\`)
 - **:rkey** — the record key; final segment of a bsky.app post URL
+- **:atUri** — full \`at://\` URI (e.g. \`at://did:plc:xxx/app.bsky.feed.post/rkey\`)
 - **limit** — integer 1–100; defaults vary per endpoint
 - **cursor** — opaque token from the "Next page →" link in the previous response
 
