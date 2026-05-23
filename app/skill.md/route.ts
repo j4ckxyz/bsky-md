@@ -4,7 +4,12 @@ import { baseUrl } from '@/lib/respond'
 export async function GET(req: NextRequest) {
   const base = baseUrl(req)
 
-  const md = `# bsky-md — Bluesky Markdown API
+  const md = `---
+name: bsky-md
+description: Fetch Bluesky posts, threads, profiles, and search results as clean Markdown via the https://bsky.md service. Use whenever the user shares a https://bsky.app URL or asks to read a Bluesky post, thread, or profile; search Bluesky posts for a topic or hashtag; see what's trending on Bluesky; fetch posts from a custom Bluesky feed; get a user's followers, following, or liked posts; or summarise or analyse Bluesky content.
+---
+
+# bsky-md — Bluesky Markdown API
 
 Fetch any public Bluesky content as clean Markdown. No auth, no API key required.
 Base URL: ${base}
