@@ -108,26 +108,26 @@ function fmtBytes(n: number): string {
 // ── Catalogue ─────────────────────────────────────────────────────────────────
 
 const ENDPOINTS = [
-  { path: '/profile/:handle',            desc: 'Bio, stats, avatar/banner',    example: '/profile/bsky.app' },
-  { path: '/profile/:handle/posts',      desc: 'Recent posts (paginated)',      example: '/profile/bsky.app/posts' },
-  { path: '/profile/:handle/post/:rkey', desc: 'Post with parents/replies context by default if a reply', example: '/profile/bsky.app/post/3lhreomsy5k2x' },
-  { path: '/…/post/:rkey/single',        desc: 'Single post itself without parent/reply context', example: '/profile/bsky.app/post/3lhreomsy5k2x/single' },
-  { path: '/…/post/:rkey/thread',        desc: 'Full self-reply thread',        example: '/profile/bsky.app/post/3lhreomsy5k2x/thread' },
-  { path: '/…/post/:rkey/quotes',        desc: 'Posts that quote this post (quotes/reposts)', example: '/profile/spacecowboy17.bsky.social/post/3lhreomsy5k2x/quotes' },
-  { path: '/…/post/:rkey/also-liked',    desc: 'Posts that people who liked this post also liked', example: '/profile/spacecowboy17.bsky.social/post/3lhreomsy5k2x/also-liked' },
-  { path: '/profile/:handle/activity',   desc: 'Combined activity timeline of posts & replies', example: '/profile/bsky.app/activity' },
-  { path: '/profile/:handle/feed/:rkey', desc: 'Public custom feed',            example: '/profile/bsky.app/feed/whats-hot' },
-  { path: '/profile/:handle/likes',      desc: 'Posts the user liked',          example: '/profile/bsky.app/likes' },
-  { path: '/profile/:handle/followers',  desc: 'Follower list',                 example: '/profile/bsky.app/followers' },
-  { path: '/profile/:handle/following',  desc: 'Following list',                example: '/profile/bsky.app/following' },
-  { path: '/profile/:handle/lists',      desc: 'Public lists created by handle', example: '/profile/bsky.app/lists' },
-  { path: '/profile/:handle/list/:rkey', desc: 'Details and members of a specific list', example: '/profile/bsky.app/list/3lhr7u7k2s22b' },
-  { path: '/profile/:handle/starter-pack/:rkey', desc: 'Starter pack details and members', example: '/profile/bsky.app/starter-pack/3lhreomsy5k2x' },
-  { path: '/search?q=:query',            desc: 'Full-text post search',         example: '/search?q=atproto' },
-  { path: '/links?url=:url',             desc: 'Posts linking to a URL/domain', example: '/links?url=theverge.com' },
-  { path: '/trending',                   desc: 'Trending topics right now',     example: '/trending' },
-  { path: '/at/:atUri',                  desc: 'AT-URI resolver & redirection', example: '/at/at://did:plc:z72hi547mmus2cej7g7cctoi/app.bsky.feed.post/3lhreomsy5k2x' },
-  { path: '/llms.txt',                   desc: 'Machine-readable API guide',    example: '/llms.txt' },
+  { path: '/profile/:handle',            desc: 'Bio, stats, avatar/banner',    example: '/profile/bsky.app', category: 'profile' },
+  { path: '/profile/:handle/posts',      desc: 'Recent posts (paginated)',      example: '/profile/bsky.app/posts', category: 'profile' },
+  { path: '/profile/:handle/post/:rkey', desc: 'Post with parents/replies context by default if a reply', example: '/profile/bsky.app/post/3lhreomsy5k2x', category: 'post' },
+  { path: '/…/post/:rkey/single',        desc: 'Single post itself without parent/reply context', example: '/profile/bsky.app/post/3lhreomsy5k2x/single', category: 'post' },
+  { path: '/…/post/:rkey/thread',        desc: 'Full self-reply thread',        example: '/profile/bsky.app/post/3lhreomsy5k2x/thread', category: 'post' },
+  { path: '/…/post/:rkey/quotes',        desc: 'Posts that quote this post (quotes/reposts)', example: '/profile/spacecowboy17.bsky.social/post/3lhreomsy5k2x/quotes', category: 'post' },
+  { path: '/…/post/:rkey/also-liked',    desc: 'Posts that people who liked this post also liked', example: '/profile/spacecowboy17.bsky.social/post/3lhreomsy5k2x/also-liked', category: 'post' },
+  { path: '/profile/:handle/activity',   desc: 'Combined activity timeline of posts & replies', example: '/profile/bsky.app/activity', category: 'profile' },
+  { path: '/profile/:handle/feed/:rkey', desc: 'Public custom feed',            example: '/profile/bsky.app/feed/whats-hot', category: 'feed' },
+  { path: '/profile/:handle/likes',      desc: 'Posts the user liked',          example: '/profile/bsky.app/likes', category: 'feed' },
+  { path: '/profile/:handle/followers',  desc: 'Follower list',                 example: '/profile/bsky.app/followers', category: 'social' },
+  { path: '/profile/:handle/following',  desc: 'Following list',                example: '/profile/bsky.app/following', category: 'social' },
+  { path: '/profile/:handle/lists',      desc: 'Public lists created by handle', example: '/profile/bsky.app/lists', category: 'list' },
+  { path: '/profile/:handle/list/:rkey', desc: 'Details and members of a specific list', example: '/profile/bsky.app/list/3lhr7u7k2s22b', category: 'list' },
+  { path: '/profile/:handle/starter-pack/:rkey', desc: 'Starter pack details and members', example: '/profile/bsky.app/starter-pack/3lhreomsy5k2x', category: 'pack' },
+  { path: '/search?q=:query',            desc: 'Full-text post search',         example: '/search?q=atproto', category: 'search' },
+  { path: '/links?url=:url',             desc: 'Posts linking to a URL/domain', example: '/links?url=theverge.com', category: 'search' },
+  { path: '/trending',                   desc: 'Trending topics right now',     example: '/trending', category: 'search' },
+  { path: '/at/:atUri',                  desc: 'AT-URI resolver & redirection', example: '/at/at://did:plc:z72hi547mmus2cej7g7cctoi/app.bsky.feed.post/3lhreomsy5k2x', category: 'utility' },
+  { path: '/llms.txt',                   desc: 'Machine-readable API guide',    example: '/llms.txt', category: 'utility' },
 ]
 
 const QUICK_LINKS = [
@@ -551,7 +551,7 @@ export default function Home() {
         <h2 className={s.sectionTitle}>All Endpoints</h2>
         <div className={s.grid}>
           {ENDPOINTS.map((ep) => (
-            <a key={ep.path} className={s.card} href={ep.example} target="_blank" rel="noopener noreferrer">
+            <a key={ep.path} className={s.card} data-category={ep.category} href={ep.example} target="_blank" rel="noopener noreferrer">
               <span className={s.cardBadge}>GET</span>
               <code className={s.cardPath}>{ep.path}</code>
               <p className={s.cardDesc}>{ep.desc}</p>

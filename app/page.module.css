@@ -684,7 +684,54 @@
   transition: border-color 150ms ease, background-color 150ms ease;
 }
 
-.card:hover {
+.card[data-category="profile"] .cardBadge {
+  border-color: color-mix(in oklch, var(--line-strong) 54%, var(--color-profile) 46%);
+  color: var(--color-profile);
+}
+.card[data-category="post"] .cardBadge {
+  border-color: color-mix(in oklch, var(--line-strong) 54%, var(--color-post) 46%);
+  color: var(--color-post);
+}
+.card[data-category="social"] .cardBadge {
+  border-color: color-mix(in oklch, var(--line-strong) 54%, var(--color-social) 46%);
+  color: var(--color-social);
+}
+.card[data-category="list"] .cardBadge,
+.card[data-category="pack"] .cardBadge {
+  border-color: color-mix(in oklch, var(--line-strong) 54%, var(--color-list) 46%);
+  color: var(--color-list);
+}
+.card[data-category="search"] .cardBadge {
+  border-color: color-mix(in oklch, var(--line-strong) 54%, var(--color-search) 46%);
+  color: var(--color-search);
+}
+.card[data-category="utility"] .cardBadge {
+  border-color: color-mix(in oklch, var(--line-strong) 54%, var(--blue-accent) 46%);
+  color: var(--blue-accent);
+}
+
+.card[data-category="profile"]:hover {
+  border-color: color-mix(in oklch, var(--line-strong) 62%, var(--color-profile) 38%);
+  background: color-mix(in oklch, var(--surface-2) 92%, var(--color-profile) 8%);
+}
+.card[data-category="post"]:hover {
+  border-color: color-mix(in oklch, var(--line-strong) 62%, var(--color-post) 38%);
+  background: color-mix(in oklch, var(--surface-2) 92%, var(--color-post) 8%);
+}
+.card[data-category="social"]:hover {
+  border-color: color-mix(in oklch, var(--line-strong) 62%, var(--color-social) 38%);
+  background: color-mix(in oklch, var(--surface-2) 92%, var(--color-social) 8%);
+}
+.card[data-category="list"]:hover,
+.card[data-category="pack"]:hover {
+  border-color: color-mix(in oklch, var(--line-strong) 62%, var(--color-list) 38%);
+  background: color-mix(in oklch, var(--surface-2) 92%, var(--color-list) 8%);
+}
+.card[data-category="search"]:hover {
+  border-color: color-mix(in oklch, var(--line-strong) 62%, var(--color-search) 38%);
+  background: color-mix(in oklch, var(--surface-2) 92%, var(--color-search) 8%);
+}
+.card[data-category="utility"]:hover {
   border-color: color-mix(in oklch, var(--line-strong) 62%, var(--blue-accent) 38%);
   background: color-mix(in oklch, var(--surface-2) 92%, var(--blue-accent) 8%);
 }
