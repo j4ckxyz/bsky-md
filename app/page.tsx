@@ -47,8 +47,12 @@ function parseBskyInput(raw: string): Parsed | null {
   try {
     const urlStr = /^https?:\/\//i.test(input) ? input : `https://${input}`
     const url = new URL(urlStr)
+    const hostname = url.hostname.toLowerCase()
 
-    if (['bsky.app', 'www.bsky.app', 'staging.bsky.app'].includes(url.hostname)) {
+    const isBskyApp = ['bsky.app', 'www.bsky.app', 'staging.bsky.app'].includes(hostname)
+    const isLocalOrBsmd = hostname.endsWith('bsky.md') || hostname.includes('localhost') || hostname.includes('127.0.0.1')
+
+    if (isBskyApp || isLocalOrBsmd) {
       const p = url.pathname.split('/').filter(Boolean)
 
       if (p.length === 0) return { path: '/trending', label: 'Trending', isPost: false }
@@ -56,7 +60,11 @@ function parseBskyInput(raw: string): Parsed | null {
       if (p[0] === 'profile' && p[1]) {
         const h = p[1]
         if (p.length === 2) return { path: `/profile/${h}`, label: 'Profile', isPost: false }
-        if (p[2] === 'post' && p[3]) return { path: `/profile/${h}/post/${p[3]}`, label: 'Post', isPost: true }
+        if (p[2] === 'post' && p[3]) {
+          const sub = p[4]?.toLowerCase()
+          const label = sub === 'also-liked' ? 'Also Liked' : sub === 'quotes' ? 'Quotes' : sub === 'thread' ? 'Thread' : 'Post'
+          return { path: url.pathname, label, isPost: true }
+        }
         if (p[2] === 'feed' && p[3]) return { path: `/profile/${h}/feed/${p[3]}`, label: 'Feed', isPost: false }
         if (p[2] === 'likes') return { path: `/profile/${h}/likes`, label: 'Likes', isPost: false }
         if (p[2] === 'followers') return { path: `/profile/${h}/followers`, label: 'Followers', isPost: false }
@@ -136,7 +144,7 @@ export default function Home() {
   const [input, setInput] = useState('')
   const [parsed, setParsed] = useState<Parsed | null>(null)
   const [theme, setTheme] = useState<ThemeSetting>('system')
-  const [viewMode, setViewMode] = useState<'post' | 'thread'>('thread')
+  const [viewMode, setViewMode] = useState<'post' | 'thread' | 'also-liked' | 'quotes'>('thread')
   const [markdown, setMarkdown] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -151,8 +159,12 @@ export default function Home() {
   const detected = input.trim() ? parseBskyInput(input) : null
   const canRun = input.trim().length > 0 && !loading
 
-  const getPath = useCallback((p: Parsed, mode: 'post' | 'thread') => {
-    if (p.isPost && mode === 'thread') return p.path + '/thread'
+  const getPath = useCallback((p: Parsed, mode: 'post' | 'thread' | 'also-liked' | 'quotes') => {
+    if (p.isPost) {
+      if (mode === 'thread') return p.path + '/thread'
+      if (mode === 'also-liked') return p.path + '/also-liked'
+      if (mode === 'quotes') return p.path + '/quotes'
+    }
     return p.path
   }, [])
 
@@ -176,7 +188,7 @@ export default function Home() {
   }, [])
 
   const run = useCallback(
-    (p: Parsed, mode: 'post' | 'thread') => {
+    (p: Parsed, mode: 'post' | 'thread' | 'also-liked' | 'quotes') => {
       setParsed(p)
       fetchMd(getPath(p, mode))
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80)
@@ -188,19 +200,64 @@ export default function Home() {
     if (loading) return
     const p = parseBskyInput(input)
     if (!p) return
-    run(p, viewMode)
-  }, [input, viewMode, run, loading])
+
+    // Detect if the path already has a subpage suffix
+    let initialMode: 'post' | 'thread' | 'also-liked' | 'quotes' = viewMode
+    let cleanPath = p.path
+    if (p.path.endsWith('/also-liked')) {
+      initialMode = 'also-liked'
+      cleanPath = p.path.replace(/\/also-liked$/, '')
+    } else if (p.path.endsWith('/quotes')) {
+      initialMode = 'quotes'
+      cleanPath = p.path.replace(/\/quotes$/, '')
+    } else if (p.path.endsWith('/thread')) {
+      initialMode = 'thread'
+      cleanPath = p.path.replace(/\/thread$/, '')
+    } else if (p.path.endsWith('/single')) {
+      initialMode = 'post'
+      cleanPath = p.path.replace(/\/single$/, '')
+    }
+
+    setViewMode(initialMode)
+    const cleanParsed = { ...p, path: cleanPath, isPost: true }
+
+    setParsed(cleanParsed)
+    fetchMd(getPath(cleanParsed, initialMode))
+    setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80)
+  }, [input, viewMode, fetchMd, getPath, loading])
 
   const handleQuick = useCallback(
     (path: string) => {
       setInput(path)
-      run({ path, label: 'Quick', isPost: false }, 'post')
+      let initialMode: 'post' | 'thread' | 'also-liked' | 'quotes' = 'post'
+      let cleanPath = path
+      let isPost = false
+      
+      if (path.includes('/post/')) {
+        isPost = true
+        if (path.endsWith('/also-liked')) {
+          initialMode = 'also-liked'
+          cleanPath = path.replace(/\/also-liked$/, '')
+        } else if (path.endsWith('/quotes')) {
+          initialMode = 'quotes'
+          cleanPath = path.replace(/\/quotes$/, '')
+        } else if (path.endsWith('/thread')) {
+          initialMode = 'thread'
+          cleanPath = path.replace(/\/thread$/, '')
+        } else if (path.endsWith('/single')) {
+          initialMode = 'post'
+          cleanPath = path.replace(/\/single$/, '')
+        }
+      }
+      
+      setViewMode(initialMode)
+      run({ path: cleanPath, label: 'Quick', isPost }, initialMode)
     },
     [run],
   )
 
   const handleViewToggle = useCallback(
-    (mode: 'post' | 'thread') => {
+    (mode: 'post' | 'thread' | 'also-liked' | 'quotes') => {
       setViewMode(mode)
       if (parsed?.isPost) fetchMd(getPath(parsed, mode))
     },
@@ -383,6 +440,22 @@ export default function Home() {
                   aria-pressed={viewMode === 'post'}
                 >
                   Single Post
+                </button>
+                <button
+                  type="button"
+                  className={`${s.toggleBtn} ${viewMode === 'quotes' ? s.toggleActive : ''}`}
+                  onClick={() => handleViewToggle('quotes')}
+                  aria-pressed={viewMode === 'quotes'}
+                >
+                  Quotes
+                </button>
+                <button
+                  type="button"
+                  className={`${s.toggleBtn} ${viewMode === 'also-liked' ? s.toggleActive : ''}`}
+                  onClick={() => handleViewToggle('also-liked')}
+                  aria-pressed={viewMode === 'also-liked'}
+                >
+                  Also Liked
                 </button>
               </div>
             )}
