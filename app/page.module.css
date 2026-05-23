@@ -225,7 +225,13 @@
   position: relative;
 }
 
-.inputWrapper::before {
+.inputGroup {
+  position: relative;
+  width: 100%;
+  display: flex;
+}
+
+.inputGroup::before {
   content: '$';
   position: absolute;
   top: 20px;
@@ -234,13 +240,14 @@
   font-family: var(--mono);
   font-size: 0.84rem;
   pointer-events: none;
+  z-index: 2;
 }
 
 .input {
   width: 100%;
   min-width: 0;
   height: 56px;
-  padding: 0 14px 0 36px;
+  padding: 0 154px 0 36px;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--surface);
@@ -266,9 +273,59 @@
   cursor: not-allowed;
 }
 
+.clearBtn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.72rem;
+  transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease;
+  padding: 0;
+  z-index: 5;
+}
+
+.clearBtn:hover {
+  color: var(--text);
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+
+.clearBtn:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--blue-accent) 70%, var(--text) 30%);
+  outline-offset: -1px;
+}
+
+.shortcutHint {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  pointer-events: none;
+  opacity: 0.72;
+  transition: opacity 140ms ease;
+  z-index: 3;
+}
+
 .detectedBadge {
   position: absolute;
-  right: 122px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   font-family: var(--mono);
@@ -281,6 +338,12 @@
   background: color-mix(in oklch, var(--surface) 78%, transparent);
   color: color-mix(in oklch, var(--text-muted) 56%, var(--blue-accent) 44%);
   pointer-events: none;
+  transition: right 180ms ease, transform 180ms ease;
+  z-index: 4;
+}
+
+.badgeShifted {
+  right: 48px;
 }
 
 .convertBtn {
@@ -966,6 +1029,11 @@
   .agentRawLink {
     padding-inline: 10px;
   }
+
+  .clearBtn {
+    width: 44px;
+    height: 44px;
+  }
 }
 
 @media (max-width: 980px) {
@@ -975,6 +1043,10 @@
 
   .detectedBadge {
     display: none;
+  }
+
+  .input {
+    padding-right: 64px;
   }
 }
 

@@ -142,6 +142,7 @@ const QUICK_LINKS = [
 
 export default function Home() {
   const [input, setInput] = useState('')
+  const [focused, setFocused] = useState(false)
   const [parsed, setParsed] = useState<Parsed | null>(null)
   const [theme, setTheme] = useState<ThemeSetting>('system')
   const [viewMode, setViewMode] = useState<'post' | 'thread' | 'also-liked' | 'quotes'>('thread')
@@ -299,6 +300,29 @@ export default function Home() {
     applyThemeSetting(stored)
   }, [])
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/') {
+        const active = document.activeElement
+        if (
+          active &&
+          (active.tagName === 'INPUT' ||
+            active.tagName === 'TEXTAREA' ||
+            active.getAttribute('contenteditable') === 'true')
+        ) {
+          return
+        }
+        e.preventDefault()
+        const inputEl = document.getElementById('bsky-input')
+        if (inputEl) {
+          (inputEl as HTMLInputElement).focus()
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   const setThemePreference = useCallback((next: ThemeSetting) => {
     setTheme(next)
     applyThemeSetting(next)
@@ -371,19 +395,45 @@ export default function Home() {
           Bluesky URL, handle, hashtag, or search query
         </label>
         <div className={s.inputWrapper}>
-          <input
-            id="bsky-input"
-            className={s.input}
-            type="text"
-            placeholder="bsky.app/profile/... | post URL | #hashtag | search"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleConvert()}
-            autoFocus
-            spellCheck={false}
-            autoComplete="off"
-          />
-          {detected && <span className={s.detectedBadge}>{detected.label}</span>}
+          <div className={s.inputGroup}>
+            <input
+              id="bsky-input"
+              className={s.input}
+              type="text"
+              placeholder="bsky.app/profile/... | post URL | #hashtag | search"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleConvert()}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              autoFocus
+              spellCheck={false}
+              autoComplete="off"
+            />
+            {!focused && !input && (
+              <span className={s.shortcutHint} aria-hidden="true">
+                /
+              </span>
+            )}
+            {input && (
+              <button
+                type="button"
+                className={s.clearBtn}
+                onClick={() => {
+                  setInput('')
+                  document.getElementById('bsky-input')?.focus()
+                }}
+                aria-label="Clear input"
+              >
+                ✕
+              </button>
+            )}
+            {detected && (
+              <span className={`${s.detectedBadge} ${input ? s.badgeShifted : ''}`}>
+                {detected.label}
+              </span>
+            )}
+          </div>
           <button type="button" className={s.convertBtn} onClick={handleConvert} disabled={!canRun}>
             {loading ? 'Running' : 'Run'}
           </button>
