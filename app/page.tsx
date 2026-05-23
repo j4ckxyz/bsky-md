@@ -131,11 +131,11 @@ const ENDPOINTS = [
 ]
 
 const QUICK_LINKS = [
-  { label: '/trending', path: '/trending' },
+  { label: '--trending', path: '/trending' },
   { label: '@bsky.app', path: '/profile/bsky.app' },
-  { label: '/feed/whats-hot', path: '/profile/bsky.app/feed/whats-hot' },
+  { label: '--feed/whats-hot', path: '/profile/bsky.app/feed/whats-hot' },
   { label: '#atproto', path: '/search?q=%23atproto' },
-  { label: 'search:tech', path: '/search?q=tech' },
+  { label: '--search/tech', path: '/search?q=tech' },
 ]
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -403,7 +403,9 @@ export default function Home() {
           <div className={s.resultCard}>
             <div className={s.resultBar}>
               <span className={s.resultLabel}>{parsed.label}</span>
-              <code className={s.resultUrl}>{activePath}</code>
+              <code className={s.resultUrl}>
+                <span className={s.promptSymbol} aria-hidden="true">$</span>{activePath}
+              </code>
               <div className={s.resultActions}>
                 <button
                   type="button"
@@ -550,9 +552,12 @@ export default function Home() {
       <section className={s.endpointsSection}>
         <h2 className={s.sectionTitle}>All Endpoints</h2>
         <div className={s.grid}>
-          {ENDPOINTS.map((ep) => (
+          {ENDPOINTS.map((ep, idx) => (
             <a key={ep.path} className={s.card} data-category={ep.category} href={ep.example} target="_blank" rel="noopener noreferrer">
-              <span className={s.cardBadge}>GET</span>
+              <div className={s.cardHeader}>
+                <span className={s.cardBadge}>GET</span>
+                <span className={s.cardIndex}>{(idx + 1).toString().padStart(2, '0')}</span>
+              </div>
               <code className={s.cardPath}>{ep.path}</code>
               <p className={s.cardDesc}>{ep.desc}</p>
             </a>
