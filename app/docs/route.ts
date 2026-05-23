@@ -186,7 +186,7 @@ Errors return \`Content-Type: text/plain\` with a message body.
 
 ---
 
-*Source: [github.com/jackgibsondev/bsky-markdown-api](https://github.com/jackgibsondev/bsky-markdown-api)*
+*Source: [github.com/j4ckxyz/bsky-md](https://github.com/j4ckxyz/bsky-md)*
 `
 
   return markdownResponse(md)
