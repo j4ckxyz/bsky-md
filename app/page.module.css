@@ -167,7 +167,6 @@
   margin: 0 auto;
   padding: clamp(56px, 9vw, 100px) 0 18px;
   position: relative;
-  animation: rise 360ms var(--ease-out);
 }
 
 .inputLabel {
@@ -189,6 +188,7 @@
   text-transform: uppercase;
   letter-spacing: 0.17em;
   margin-bottom: 18px;
+  animation: rise 360ms var(--ease-out) both;
 }
 
 .title {
@@ -199,6 +199,8 @@
   max-width: 14ch;
   text-wrap: balance;
   margin-bottom: 18px;
+  animation: rise 360ms var(--ease-out) both;
+  animation-delay: 80ms;
 }
 
 .title::after {
@@ -215,6 +217,8 @@
   line-height: 1.66;
   font-size: clamp(0.95rem, 1.55vw, 1.08rem);
   margin-bottom: 30px;
+  animation: rise 360ms var(--ease-out) both;
+  animation-delay: 140ms;
 }
 
 .inputWrapper {
@@ -223,6 +227,8 @@
   gap: 12px;
   max-width: 900px;
   position: relative;
+  animation: rise 360ms var(--ease-out) both;
+  animation-delay: 200ms;
 }
 
 .inputGroup {
@@ -273,6 +279,17 @@
   cursor: not-allowed;
 }
 
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
 .clearBtn {
   position: absolute;
   right: 12px;
@@ -289,9 +306,10 @@
   justify-content: center;
   cursor: pointer;
   font-size: 0.72rem;
-  transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease;
+  transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease, transform 140ms var(--ease-out);
   padding: 0;
   z-index: 5;
+  animation: popIn 140ms var(--ease-out) both;
 }
 
 .clearBtn:hover {
@@ -303,6 +321,10 @@
 .clearBtn:focus-visible {
   outline: 2px solid color-mix(in oklch, var(--blue-accent) 70%, var(--text) 30%);
   outline-offset: -1px;
+}
+
+.clearBtn:active {
+  transform: translateY(-50%) scale(0.94);
 }
 
 .shortcutHint {
@@ -323,6 +345,17 @@
   z-index: 3;
 }
 
+@keyframes badgePopIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
 .detectedBadge {
   position: absolute;
   right: 12px;
@@ -340,6 +373,7 @@
   pointer-events: none;
   transition: right 180ms ease, transform 180ms ease;
   z-index: 4;
+  animation: badgePopIn 160ms var(--ease-out) both;
 }
 
 .badgeShifted {
@@ -395,6 +429,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  animation: rise 360ms var(--ease-out) both;
+  animation-delay: 260ms;
 }
 
 .pill {
@@ -435,6 +471,7 @@
 
 .resultSection {
   margin-top: 28px;
+  animation: rise 240ms var(--ease-out) both;
 }
 
 .resultCard {
@@ -519,7 +556,7 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   font-family: var(--mono);
-  transition: border-color 140ms ease, color 140ms ease, background-color 140ms ease;
+  transition: border-color 140ms ease, color 140ms ease, background-color 140ms ease, transform 140ms var(--ease-out);
 }
 
 .actionBtn:hover {
@@ -533,10 +570,27 @@
   outline-offset: 2px;
 }
 
+.actionBtn:active {
+  transform: scale(0.96);
+}
+
+@keyframes successFlash {
+  0% {
+    transform: scale(0.97);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .actionBtnSuccess {
   background: var(--text);
   color: var(--bg);
   border-color: var(--text);
+  animation: successFlash 200ms var(--ease-out) both;
 }
 
 .toggle {
@@ -556,6 +610,7 @@
   font-size: 0.72rem;
   font-family: var(--mono);
   letter-spacing: 0.02em;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
 }
 
 .toggleBtn:hover {
@@ -609,6 +664,19 @@
 
 .previewError {
   color: color-mix(in oklch, var(--text) 58%, var(--danger));
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fadeIn {
+  animation: fadeIn 150ms var(--ease-out) both;
 }
 
 .previewLoading {
@@ -752,7 +820,7 @@
   text-decoration: none;
   color: inherit;
   min-height: 116px;
-  transition: border-color 150ms ease, background-color 150ms ease;
+  transition: border-color 150ms ease, background-color 150ms ease, transform 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
 }
 
 .card[data-category="profile"] .cardBadge {
@@ -805,6 +873,11 @@
 .card[data-category="utility"]:hover {
   border-color: color-mix(in oklch, var(--line-strong) 62%, var(--blue-accent) 38%);
   background: color-mix(in oklch, var(--surface-2) 92%, var(--blue-accent) 8%);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px -8px var(--blue-glow);
 }
 
 .cardBadge {

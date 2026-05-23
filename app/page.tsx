@@ -535,7 +535,7 @@ export default function Home() {
               <pre className={`${s.preview} ${s.previewError}`} role="alert">{error}</pre>
             )}
             {!loading && markdown && (
-              <pre className={s.preview}>{markdown}</pre>
+              <pre className={`${s.preview} ${s.fadeIn}`}>{markdown}</pre>
             )}
           </div>
         </section>
