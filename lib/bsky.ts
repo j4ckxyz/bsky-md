@@ -238,15 +238,26 @@ export async function getLikes(
   cursor?: string,
   limit = 20,
 ): Promise<FeedPage> {
-  const res = await agent.getActorLikes({
-    actor: handle,
-    cursor,
-    limit: Math.min(limit, 100),
+  const did = await resolveDid(handle).catch(() => {
+    throw Object.assign(new Error('Profile not found'), { status: 404 })
   })
 
-  return {
-    posts: res.data.feed.map(({ post }) => postViewToPostData(post)),
-    cursor: res.data.cursor,
+  try {
+    const res = await agent.getActorLikes({
+      actor: did,
+      cursor,
+      limit: Math.min(limit, 100),
+    })
+
+    return {
+      posts: res.data.feed.map(({ post }) => postViewToPostData(post)),
+      cursor: res.data.cursor,
+    }
+  } catch (e: unknown) {
+    throw Object.assign(
+      new Error(`Bluesky restricts public access to likes. Viewing another user's likes tab requires authenticated session ownership, which is not supported by public bsky.md queries.`),
+      { status: 403 },
+    )
   }
 }
 
