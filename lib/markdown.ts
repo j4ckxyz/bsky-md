@@ -1031,8 +1031,15 @@ export function renderAlsoLikedSection(posts: PostData[], baseUrl: string): stri
   lines.push('')
   lines.push('*Posts that people who liked this post also liked (via [foryou.club](https://foryou.club/also-liked)):*')
   
+  let first = true
   for (const post of posts) {
-    lines.push(hr())
+    if (!first) {
+      lines.push(hr())
+    } else {
+      lines.push('')
+      lines.push('')
+      first = false
+    }
     lines.push(renderPostBlock(post))
     lines.push('')
     lines.push(
