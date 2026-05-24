@@ -318,9 +318,14 @@ export async function searchPostsByUrl(
   cursor?: string,
   limit = 50,
 ): Promise<SearchPage> {
+  let targetUrl = url.trim()
+  if (!/^https?:\/\//i.test(targetUrl)) {
+    targetUrl = `https://${targetUrl}`
+  }
+
   const res = await searchAgent.app.bsky.feed.searchPosts({
     q: '*',
-    url,
+    url: targetUrl,
     cursor,
     limit: Math.min(limit, 100),
   })

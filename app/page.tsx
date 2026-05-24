@@ -104,6 +104,115 @@ function fmtBytes(n: number): string {
   return `${(n / 1000).toFixed(1)}k chars`
 }
 
+// ── Category detection & Tab constants ────────────────────────────────────────
+
+type QueryCategory =
+  | 'profile'
+  | 'post'
+  | 'list'
+  | 'starter-pack'
+  | 'feed'
+  | 'search'
+  | 'trending'
+  | 'links'
+  | 'utility'
+
+interface CategoryDetection {
+  category: QueryCategory
+  basePath: string
+  defaultView: string
+}
+
+function detectQueryCategory(path: string): CategoryDetection {
+  const cleanPath = path.split('?')[0] // remove query string
+  const p = cleanPath.split('/').filter(Boolean)
+
+  if (p[0] === 'profile' && p[1]) {
+    const handle = p[1]
+    
+    // 1. Post Check
+    if (p[2] === 'post' && p[3]) {
+      const rkey = p[3]
+      const basePath = `/profile/${handle}/post/${rkey}`
+      let defaultView = 'thread'
+      if (p[4]) {
+        const sub = p[4].toLowerCase()
+        if (['single', 'thread', 'quotes', 'also-liked'].includes(sub)) {
+          defaultView = sub
+        }
+      }
+      return { category: 'post', basePath, defaultView }
+    }
+    
+    // 2. Custom Feed Check
+    if (p[2] === 'feed' && p[3]) {
+      return { category: 'feed', basePath: `/profile/${handle}/feed/${p[3]}`, defaultView: 'default' }
+    }
+
+    // 3. List Detail Check
+    if (p[2] === 'list' && p[3]) {
+      return { category: 'list', basePath: `/profile/${handle}/list/${p[3]}`, defaultView: 'default' }
+    }
+
+    // 4. Starter Pack Check
+    if (p[2] === 'starter-pack' && p[3]) {
+      return { category: 'starter-pack', basePath: `/profile/${handle}/starter-pack/${p[3]}`, defaultView: 'default' }
+    }
+
+    // 5. Profile views
+    const basePath = `/profile/${handle}`
+    let defaultView = 'bio'
+    if (p[2]) {
+      const sub = p[2].toLowerCase()
+      if (['posts', 'activity', 'likes', 'followers', 'following', 'lists'].includes(sub)) {
+        defaultView = sub
+      }
+    }
+    return { category: 'profile', basePath, defaultView }
+  }
+
+  // 6. Search
+  if (path.startsWith('/search')) {
+    return { category: 'search', basePath: path, defaultView: 'default' }
+  }
+
+  // 7. Links
+  if (path.startsWith('/links')) {
+    return { category: 'links', basePath: path, defaultView: 'default' }
+  }
+
+  // 8. Trending
+  if (path.startsWith('/trending')) {
+    return { category: 'trending', basePath: '/trending', defaultView: 'default' }
+  }
+
+  // Utility / AT-URI
+  return { category: 'utility', basePath: path, defaultView: 'default' }
+}
+
+interface TabDefinition {
+  id: string
+  label: string
+  pathSuffix: string
+}
+
+const TABS_BY_CATEGORY: Record<string, TabDefinition[]> = {
+  profile: [
+    { id: 'bio', label: 'Profile Bio', pathSuffix: '' },
+    { id: 'posts', label: 'Recent Posts', pathSuffix: '/posts' },
+    { id: 'activity', label: 'Activity Timeline', pathSuffix: '/activity' },
+    { id: 'likes', label: 'Liked Posts', pathSuffix: '/likes' },
+    { id: 'lists', label: 'Public Lists', pathSuffix: '/lists' },
+    { id: 'followers', label: 'Followers', pathSuffix: '/followers' },
+    { id: 'following', label: 'Following', pathSuffix: '/following' },
+  ],
+  post: [
+    { id: 'thread', label: 'Full Thread', pathSuffix: '/thread' },
+    { id: 'single', label: 'Single Post', pathSuffix: '/single' },
+    { id: 'quotes', label: 'Quotes', pathSuffix: '/quotes' },
+    { id: 'also-liked', label: 'Also Liked', pathSuffix: '/also-liked' },
+  ],
+}
 
 // ── Catalogue ─────────────────────────────────────────────────────────────────
 
@@ -145,7 +254,7 @@ export default function Home() {
   const [focused, setFocused] = useState(false)
   const [parsed, setParsed] = useState<Parsed | null>(null)
   const [theme, setTheme] = useState<ThemeSetting>('system')
-  const [viewMode, setViewMode] = useState<'post' | 'thread' | 'also-liked' | 'quotes'>('thread')
+  const [viewMode, setViewMode] = useState<string>('thread')
   const [markdown, setMarkdown] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -160,12 +269,23 @@ export default function Home() {
   const detected = input.trim() ? parseBskyInput(input) : null
   const canRun = input.trim().length > 0 && !loading
 
-  const getPath = useCallback((p: Parsed, mode: 'post' | 'thread' | 'also-liked' | 'quotes') => {
-    if (p.isPost) {
-      if (mode === 'thread') return p.path + '/thread'
-      if (mode === 'also-liked') return p.path + '/also-liked'
-      if (mode === 'quotes') return p.path + '/quotes'
+  const getPath = useCallback((p: Parsed, mode: string) => {
+    const { category, basePath } = detectQueryCategory(p.path)
+    
+    if (category === 'profile') {
+      if (mode === 'bio') return basePath
+      if (['posts', 'activity', 'likes', 'followers', 'following', 'lists'].includes(mode)) {
+        return `${basePath}/${mode}`
+      }
     }
+    
+    if (category === 'post') {
+      if (mode === 'single') return `${basePath}/single`
+      if (['thread', 'quotes', 'also-liked'].includes(mode)) {
+        return `${basePath}/${mode}`
+      }
+    }
+    
     return p.path
   }, [])
 
@@ -188,79 +308,41 @@ export default function Home() {
     }
   }, [])
 
-  const run = useCallback(
-    (p: Parsed, mode: 'post' | 'thread' | 'also-liked' | 'quotes') => {
-      setParsed(p)
-      fetchMd(getPath(p, mode))
-      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80)
-    },
-    [fetchMd, getPath],
-  )
-
   const handleConvert = useCallback(() => {
     if (loading) return
     const p = parseBskyInput(input)
     if (!p) return
 
-    // Detect if the path already has a subpage suffix
-    let initialMode: 'post' | 'thread' | 'also-liked' | 'quotes' = viewMode
-    let cleanPath = p.path
-    if (p.path.endsWith('/also-liked')) {
-      initialMode = 'also-liked'
-      cleanPath = p.path.replace(/\/also-liked$/, '')
-    } else if (p.path.endsWith('/quotes')) {
-      initialMode = 'quotes'
-      cleanPath = p.path.replace(/\/quotes$/, '')
-    } else if (p.path.endsWith('/thread')) {
-      initialMode = 'thread'
-      cleanPath = p.path.replace(/\/thread$/, '')
-    } else if (p.path.endsWith('/single')) {
-      initialMode = 'post'
-      cleanPath = p.path.replace(/\/single$/, '')
-    }
+    const { category, basePath, defaultView } = detectQueryCategory(p.path)
+    const cleanParsed = { ...p, path: basePath }
 
-    setViewMode(initialMode)
-    const cleanParsed = { ...p, path: cleanPath, isPost: true }
-
+    setViewMode(defaultView)
     setParsed(cleanParsed)
-    fetchMd(getPath(cleanParsed, initialMode))
+    fetchMd(getPath(cleanParsed, defaultView))
     setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80)
-  }, [input, viewMode, fetchMd, getPath, loading])
+  }, [input, fetchMd, getPath, loading])
 
   const handleQuick = useCallback(
     (path: string) => {
       setInput(path)
-      let initialMode: 'post' | 'thread' | 'also-liked' | 'quotes' = 'post'
-      let cleanPath = path
-      let isPost = false
-      
-      if (path.includes('/post/')) {
-        isPost = true
-        if (path.endsWith('/also-liked')) {
-          initialMode = 'also-liked'
-          cleanPath = path.replace(/\/also-liked$/, '')
-        } else if (path.endsWith('/quotes')) {
-          initialMode = 'quotes'
-          cleanPath = path.replace(/\/quotes$/, '')
-        } else if (path.endsWith('/thread')) {
-          initialMode = 'thread'
-          cleanPath = path.replace(/\/thread$/, '')
-        } else if (path.endsWith('/single')) {
-          initialMode = 'post'
-          cleanPath = path.replace(/\/single$/, '')
-        }
-      }
-      
-      setViewMode(initialMode)
-      run({ path: cleanPath, label: 'Quick', isPost }, initialMode)
+      const p = parseBskyInput(path)
+      if (!p) return
+
+      const { category, basePath, defaultView } = detectQueryCategory(p.path)
+      const cleanParsed = { ...p, path: basePath }
+
+      setViewMode(defaultView)
+      setParsed(cleanParsed)
+      fetchMd(getPath(cleanParsed, defaultView))
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80)
     },
-    [run],
+    [fetchMd, getPath],
   )
 
   const handleViewToggle = useCallback(
-    (mode: 'post' | 'thread' | 'also-liked' | 'quotes') => {
+    (mode: string) => {
       setViewMode(mode)
-      if (parsed?.isPost) fetchMd(getPath(parsed, mode))
+      if (parsed) fetchMd(getPath(parsed, mode))
     },
     [parsed, fetchMd, getPath],
   )
@@ -333,7 +415,7 @@ export default function Home() {
     }
   }, [])
 
-  const activePath = parsed ? getPath(parsed, parsed.isPost ? viewMode : 'post') : null
+  const activePath = parsed ? getPath(parsed, viewMode) : null
   const charCount = markdown ? markdown.length : 0
 
   return (
@@ -475,42 +557,26 @@ export default function Home() {
               </div>
             </div>
 
-            {parsed.isPost && (
-              <div className={s.toggle}>
-                <button
-                  type="button"
-                  className={`${s.toggleBtn} ${viewMode === 'thread' ? s.toggleActive : ''}`}
-                  onClick={() => handleViewToggle('thread')}
-                  aria-pressed={viewMode === 'thread'}
-                >
-                  Full Thread
-                </button>
-                <button
-                  type="button"
-                  className={`${s.toggleBtn} ${viewMode === 'post' ? s.toggleActive : ''}`}
-                  onClick={() => handleViewToggle('post')}
-                  aria-pressed={viewMode === 'post'}
-                >
-                  Single Post
-                </button>
-                <button
-                  type="button"
-                  className={`${s.toggleBtn} ${viewMode === 'quotes' ? s.toggleActive : ''}`}
-                  onClick={() => handleViewToggle('quotes')}
-                  aria-pressed={viewMode === 'quotes'}
-                >
-                  Quotes
-                </button>
-                <button
-                  type="button"
-                  className={`${s.toggleBtn} ${viewMode === 'also-liked' ? s.toggleActive : ''}`}
-                  onClick={() => handleViewToggle('also-liked')}
-                  aria-pressed={viewMode === 'also-liked'}
-                >
-                  Also Liked
-                </button>
-              </div>
-            )}
+            {(() => {
+              const { category } = detectQueryCategory(parsed.path)
+              const tabs = TABS_BY_CATEGORY[category]
+              if (!tabs || tabs.length === 0) return null
+              return (
+                <div className={s.toggle}>
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      className={`${s.toggleBtn} ${viewMode === tab.id ? s.toggleActive : ''}`}
+                      onClick={() => handleViewToggle(tab.id)}
+                      aria-pressed={viewMode === tab.id}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              )
+            })()}
 
             {!loading && markdown && (
               <div className={s.previewToolbar}>
