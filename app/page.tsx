@@ -415,6 +415,11 @@ export default function Home() {
     }
   }, [])
 
+  const cycleTheme = useCallback(() => {
+    const nextTheme: ThemeSetting = theme === 'system' ? 'dark' : theme === 'dark' ? 'light' : 'system'
+    setThemePreference(nextTheme)
+  }, [theme, setThemePreference])
+
   const activePath = parsed ? getPath(parsed, viewMode) : null
   const charCount = markdown ? markdown.length : 0
 
@@ -426,42 +431,14 @@ export default function Home() {
             <span className={s.logoMark} aria-hidden="true">&gt;</span>
             bsky.md
           </a>
-          <div className={s.navRight}>
-            <nav className={s.navLinks}>
-              <a href="/trending">Trending</a>
-              <a href="/llms.txt">llms.txt</a>
-              <a href="/cli">CLI</a>
-              <a href="https://tangled.org/j4ck.xyz/bsky-md" target="_blank" rel="noopener noreferrer">
-                Source
-              </a>
-            </nav>
-            <div className={s.themeSwitch} role="group" aria-label="Theme preference">
-              <button
-                type="button"
-                className={`${s.themeBtn} ${theme === 'system' ? s.themeBtnActive : ''}`}
-                onClick={() => setThemePreference('system')}
-                aria-pressed={theme === 'system'}
-              >
-                Auto
-              </button>
-              <button
-                type="button"
-                className={`${s.themeBtn} ${theme === 'dark' ? s.themeBtnActive : ''}`}
-                onClick={() => setThemePreference('dark')}
-                aria-pressed={theme === 'dark'}
-              >
-                Dark
-              </button>
-              <button
-                type="button"
-                className={`${s.themeBtn} ${theme === 'light' ? s.themeBtnActive : ''}`}
-                onClick={() => setThemePreference('light')}
-                aria-pressed={theme === 'light'}
-              >
-                Light
-              </button>
-            </div>
-          </div>
+          <nav className={s.navLinks}>
+            <a href="/trending">Trending</a>
+            <a href="/llms.txt">llms.txt</a>
+            <a href="/cli">CLI</a>
+            <a href="https://tangled.org/j4ck.xyz/bsky-md" target="_blank" rel="noopener noreferrer">
+              Source
+            </a>
+          </nav>
         </div>
       </header>
 
@@ -731,6 +708,47 @@ export default function Home() {
           <a href="https://tangled.org/j4ck.xyz/bsky-md" target="_blank" rel="noopener noreferrer">
             Source on Tangled
           </a>
+          <button
+            type="button"
+            className={s.footerThemeBtn}
+            onClick={cycleTheme}
+            aria-label={`Cycle theme (currently ${theme})`}
+            title={`Cycle theme (currently ${theme})`}
+          >
+            {theme === 'system' && (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '6px' }}>
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 2v20A10 10 0 0 0 12 2z" fill="currentColor" />
+                </svg>
+                Auto
+              </>
+            )}
+            {theme === 'dark' && (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
+                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" fill="currentColor" />
+                </svg>
+                Dark
+              </>
+            )}
+            {theme === 'light' && (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
+                  <circle cx="12" cy="12" r="4" fill="currentColor" />
+                  <path d="M12 2v2" />
+                  <path d="M12 20v2" />
+                  <path d="M4.93 4.93l1.41 1.41" />
+                  <path d="M17.66 17.66l1.41 1.41" />
+                  <path d="M2 12h2" />
+                  <path d="M20 12h2" />
+                  <path d="M6.34 17.66l-1.41 1.41" />
+                  <path d="M19.07 4.93l-1.41 1.41" />
+                </svg>
+                Light
+              </>
+            )}
+          </button>
         </div>
         <p className={s.footerNote}>Content-Type: text/markdown · bsky.md</p>
       </footer>
