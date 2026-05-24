@@ -64,18 +64,6 @@ The full thread starting from the given post: root post followed by all self-rep
 
 ---
 
-### Likes
-
-\`\`\`
-GET ${base}/profile/:handle/likes
-GET ${base}/profile/:handle/likes?cursor=<cursor>&limit=<1-100>
-\`\`\`
-
-Paginated list of posts liked by the user, rendered as full post blocks.
-
-**Example:** [${base}/profile/bsky.app/likes](${base}/profile/bsky.app/likes)
-
----
 
 ### Followers
 

@@ -35,7 +35,6 @@ No auth. No API key. Just HTTP.
   /profile/:handle/post/:rkey         Single post with embeds
   /profile/:handle/post/:rkey/thread  Full thread
   /profile/:handle/feed/:rkey         Public custom feed
-  /profile/:handle/likes              Posts the user liked
   /profile/:handle/followers          Follower list
   /profile/:handle/following          Following list
   /search?q=:query                    Full-text post search

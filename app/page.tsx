@@ -66,7 +66,6 @@ function parseBskyInput(raw: string): Parsed | null {
           return { path: url.pathname, label, isPost: true }
         }
         if (p[2] === 'feed' && p[3]) return { path: `/profile/${h}/feed/${p[3]}`, label: 'Feed', isPost: false }
-        if (p[2] === 'likes') return { path: `/profile/${h}/likes`, label: 'Likes', isPost: false }
         if (p[2] === 'followers') return { path: `/profile/${h}/followers`, label: 'Followers', isPost: false }
         if (p[2] === 'following') return { path: `/profile/${h}/following`, label: 'Following', isPost: false }
         return { path: `/profile/${h}`, label: 'Profile', isPost: false }
@@ -164,7 +163,7 @@ function detectQueryCategory(path: string): CategoryDetection {
     let defaultView = 'bio'
     if (p[2]) {
       const sub = p[2].toLowerCase()
-      if (['posts', 'activity', 'likes', 'followers', 'following', 'lists'].includes(sub)) {
+      if (['posts', 'activity', 'followers', 'following', 'lists'].includes(sub)) {
         defaultView = sub
       }
     }
@@ -201,7 +200,6 @@ const TABS_BY_CATEGORY: Record<string, TabDefinition[]> = {
     { id: 'bio', label: 'Profile Bio', pathSuffix: '' },
     { id: 'posts', label: 'Recent Posts', pathSuffix: '/posts' },
     { id: 'activity', label: 'Activity Timeline', pathSuffix: '/activity' },
-    { id: 'likes', label: 'Liked Posts', pathSuffix: '/likes' },
     { id: 'lists', label: 'Public Lists', pathSuffix: '/lists' },
     { id: 'followers', label: 'Followers', pathSuffix: '/followers' },
     { id: 'following', label: 'Following', pathSuffix: '/following' },
@@ -226,7 +224,6 @@ const ENDPOINTS = [
   { path: '/…/post/:rkey/also-liked',    desc: 'Posts that people who liked this post also liked', example: '/profile/spacecowboy17.bsky.social/post/3lhreomsy5k2x/also-liked', category: 'post' },
   { path: '/profile/:handle/activity',   desc: 'Combined activity timeline of posts & replies', example: '/profile/bsky.app/activity', category: 'profile' },
   { path: '/profile/:handle/feed/:rkey', desc: 'Public custom feed',            example: '/profile/bsky.app/feed/whats-hot', category: 'feed' },
-  { path: '/profile/:handle/likes',      desc: 'Posts the user liked',          example: '/profile/bsky.app/likes', category: 'feed' },
   { path: '/profile/:handle/followers',  desc: 'Follower list',                 example: '/profile/bsky.app/followers', category: 'social' },
   { path: '/profile/:handle/following',  desc: 'Following list',                example: '/profile/bsky.app/following', category: 'social' },
   { path: '/profile/:handle/lists',      desc: 'Public lists created by handle', example: '/profile/bsky.app/lists', category: 'list' },
@@ -274,7 +271,7 @@ export default function Home() {
     
     if (category === 'profile') {
       if (mode === 'bio') return basePath
-      if (['posts', 'activity', 'likes', 'followers', 'following', 'lists'].includes(mode)) {
+      if (['posts', 'activity', 'followers', 'following', 'lists'].includes(mode)) {
         return `${basePath}/${mode}`
       }
     }

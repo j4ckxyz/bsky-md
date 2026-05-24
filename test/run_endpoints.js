@@ -15,7 +15,6 @@ const TEST_CASES = [
   { path: '/profile/j4ck.xyz/post/3mmkleuz4xc2f/also-liked', expectedStatus: 200 },
   { path: '/profile/bsky.app/activity', expectedStatus: 200 },
   { path: '/profile/bsky.app/feed/whats-hot', expectedStatus: 200 },
-  { path: '/profile/bsky.app/likes', expectedStatus: 403 }, // 403 expected due to privacy
   { path: '/profile/bsky.app/followers', expectedStatus: 200 },
   { path: '/profile/bsky.app/following', expectedStatus: 200 },
   { path: '/profile/bsky.app/lists', expectedStatus: 200 },

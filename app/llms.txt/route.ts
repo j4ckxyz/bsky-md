@@ -77,16 +77,6 @@ Useful for reading "tweetstorm"-style threads as a single document.
 
 Example: ${base}/profile/bsky.app/post/3lhreomsy5k2x/thread
 
----
-
-### GET /profile/:handle/likes
-Returns a paginated list of posts liked by the user.
-
-Query parameters:
-- cursor — pagination cursor (optional)
-- limit  — 1–100, default 20
-
-Example: ${base}/profile/bsky.app/likes
 
 ---
 

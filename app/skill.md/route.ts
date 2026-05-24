@@ -117,10 +117,6 @@ GET ${base}/profile/:handle/feed/:rkey[?cursor=&limit=]
 Public Bluesky feeds. Example feeds: whats-hot, for-you, discover.
 Maps to bsky.app/profile/:handle/feed/:rkey.
 
-### Likes
-\`\`\`
-GET ${base}/profile/:handle/likes[?cursor=&limit=]
-\`\`\`
 
 ### Followers / Following
 \`\`\`
