@@ -62,7 +62,7 @@ function parseBskyInput(raw: string): Parsed | null {
         if (p.length === 2) return { path: `/profile/${h}`, label: 'Profile', isPost: false }
         if (p[2] === 'post' && p[3]) {
           const sub = p[4]?.toLowerCase()
-          const label = sub === 'also-liked' ? 'Also Liked' : sub === 'quotes' ? 'Quotes' : sub === 'thread' ? 'Thread' : 'Post'
+          const label = sub === 'also-liked' ? 'Also Liked' : sub === 'quotes' ? 'Quotes' : sub === 'thread' ? 'Thread' : sub === 'replies' ? 'Replies' : 'Post'
           return { path: url.pathname, label, isPost: true }
         }
         if (p[2] === 'feed' && p[3]) return { path: `/profile/${h}/feed/${p[3]}`, label: 'Feed', isPost: false }
@@ -136,7 +136,7 @@ function detectQueryCategory(path: string): CategoryDetection {
       let defaultView = 'thread'
       if (p[4]) {
         const sub = p[4].toLowerCase()
-        if (['single', 'thread', 'quotes', 'also-liked'].includes(sub)) {
+        if (['single', 'thread', 'quotes', 'also-liked', 'replies'].includes(sub)) {
           defaultView = sub
         }
       }
@@ -207,6 +207,7 @@ const TABS_BY_CATEGORY: Record<string, TabDefinition[]> = {
   post: [
     { id: 'thread', label: 'Full Thread', pathSuffix: '/thread' },
     { id: 'single', label: 'Single Post', pathSuffix: '/single' },
+    { id: 'replies', label: 'Replies', pathSuffix: '/replies' },
     { id: 'quotes', label: 'Quotes', pathSuffix: '/quotes' },
     { id: 'also-liked', label: 'Also Liked', pathSuffix: '/also-liked' },
   ],
@@ -220,6 +221,7 @@ const ENDPOINTS = [
   { path: '/profile/:handle/post/:rkey', desc: 'Post with parents/replies context by default if a reply', example: '/profile/bsky.app/post/3lhreomsy5k2x', category: 'post' },
   { path: '/…/post/:rkey/single',        desc: 'Single post itself without parent/reply context', example: '/profile/bsky.app/post/3lhreomsy5k2x/single', category: 'post' },
   { path: '/…/post/:rkey/thread',        desc: 'Full self-reply thread',        example: '/profile/bsky.app/post/3lhreomsy5k2x/thread', category: 'post' },
+  { path: '/…/post/:rkey/replies',       desc: 'Full cross-author reply tree',  example: '/profile/bsky.app/post/3lhreomsy5k2x/replies', category: 'post' },
   { path: '/…/post/:rkey/quotes',        desc: 'Posts that quote this post (quotes/reposts)', example: '/profile/spacecowboy17.bsky.social/post/3lhreomsy5k2x/quotes', category: 'post' },
   { path: '/…/post/:rkey/also-liked',    desc: 'Posts that people who liked this post also liked', example: '/profile/spacecowboy17.bsky.social/post/3lhreomsy5k2x/also-liked', category: 'post' },
   { path: '/profile/:handle/activity',   desc: 'Combined activity timeline of posts & replies', example: '/profile/bsky.app/activity', category: 'profile' },
@@ -278,7 +280,7 @@ export default function Home() {
     
     if (category === 'post') {
       if (mode === 'single') return `${basePath}/single`
-      if (['thread', 'quotes', 'also-liked'].includes(mode)) {
+      if (['thread', 'quotes', 'also-liked', 'replies'].includes(mode)) {
         return `${basePath}/${mode}`
       }
     }

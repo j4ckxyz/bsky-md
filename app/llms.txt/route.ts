@@ -77,6 +77,16 @@ Useful for reading "tweetstorm"-style threads as a single document.
 
 Example: ${base}/profile/bsky.app/post/3lhreomsy5k2x/thread
 
+---
+
+### GET /profile/:handle/post/:rkey/replies
+Returns the full cross-author reply tree for a post (excluding posts by the original author).
+
+Query parameters:
+- cursor — pagination offset index (optional)
+- limit  — number of replies, 1–100, default 20
+
+Example: ${base}/profile/bsky.app/post/3lhreomsy5k2x/replies
 
 ---
 
@@ -173,6 +183,7 @@ Error responses use Content-Type: text/plain.
 - Fetch ${base}/profile/:handle to get a user overview and a link to their posts.
 - Fetch ${base}/profile/:handle/posts to read recent posts; follow "Next page →" for more.
 - Fetch ${base}/profile/:handle/post/:rkey/thread to get a complete multi-post thread.
+- Fetch ${base}/profile/:handle/post/:rkey/replies to get the full cross-author reply tree for a post.
 - Fetch ${base}/search?q=TOPIC to discover posts about a topic without knowing any handles.
 - Fetch ${base}/links?url=DOMAIN to find all posts linking to a website or specific URL.
 - All responses are plain Markdown — strip formatting or feed directly into context windows.

@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { getThread } from '@/lib/bsky'
-import { renderThread } from '@/lib/markdown'
-import { immutableMarkdownResponse, optionsResponse, baseUrl, handleRoute } from '@/lib/respond'
+import { getReplies } from '@/lib/bsky'
+import { renderReplies } from '@/lib/markdown'
+import { markdownResponse, optionsResponse, baseUrl, handleRoute } from '@/lib/respond'
 import { isAtUri, redirectPathForAtUri } from '@/lib/at-uri'
 
 export async function GET(
@@ -15,7 +15,7 @@ export async function GET(
     if (isAtUri(handle)) {
       const redirectPath = redirectPathForAtUri(handle)
       if (redirectPath) {
-        const targetPath = `${redirectPath}/thread`
+        const targetPath = `${redirectPath}/replies`
         const newUrl = new URL(targetPath, baseUrl(req))
         req.nextUrl.searchParams.forEach((value, key) => {
           newUrl.searchParams.set(key, value)
@@ -24,10 +24,13 @@ export async function GET(
       }
     }
 
-    const full = req.nextUrl.searchParams.get('full') === 'true'
-    const thread = await getThread(handle, rkey, full)
-    const md = renderThread(thread, baseUrl(req))
-    return immutableMarkdownResponse(md)
+    const searchParams = req.nextUrl.searchParams
+    const cursor = searchParams.get('cursor') ?? undefined
+    const limit = Math.min(parseInt(searchParams.get('limit') ?? '20', 10), 100)
+
+    const { root, replies } = await getReplies(handle, rkey)
+    const md = renderReplies(handle, rkey, root, replies, baseUrl(req), limit, cursor)
+    return markdownResponse(md)
   })
 }
 

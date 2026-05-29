@@ -47,6 +47,10 @@ function apiPostsUrl(handle: string): string {
   return `/profile/${handle}/posts`
 }
 
+function apiRepliesUrl(handle: string, rkey: string): string {
+  return `/profile/${handle}/post/${rkey}/replies`
+}
+
 function hr(): string {
   return '\n\n---\n\n'
 }
@@ -381,6 +385,10 @@ export function renderPost(post: PostData, baseUrl: string): string {
 
   lines.push(
     `[View thread](${baseUrl}${apiThreadUrl(handle, post.rkey)}) · [View profile](${baseUrl}${apiProfileUrl(handle)}) · [View on Bluesky](${bskyPostUrl(handle, post.rkey)})`,
+  )
+  lines.push('')
+  lines.push(
+    `[Fetch all replies →](${baseUrl}${apiRepliesUrl(handle, post.rkey)})`,
   )
 
   return lines.join('\n')
@@ -944,6 +952,59 @@ export function renderQuotes(
     lines.push(`[Next page →](${baseUrl}/profile/${handle}/post/${rkey}/quotes?cursor=${encodeURIComponent(page.cursor)})`)
   } else {
     lines.push('*End of quotes.*')
+  }
+  
+  return lines.join('\n')
+}
+
+export function renderReplies(
+  handle: string,
+  rkey: string,
+  root: PostData,
+  replies: PostData[],
+  baseUrl: string,
+  limit = 20,
+  cursor?: string,
+): string {
+  const lines: string[] = []
+  
+  lines.push(`# Replies to post by [@${handle}](${bskyProfileUrl(handle)})`)
+  lines.push('')
+  lines.push(`[Original Post](${baseUrl}${apiPostUrl(handle, rkey)}) · [View thread](${baseUrl}${apiThreadUrl(handle, rkey)}) · [View on Bluesky](${bskyPostUrl(handle, rkey)})`)
+  lines.push('')
+  
+  if (replies.length === 0) {
+    lines.push(hr())
+    lines.push('*No replies found (excluding the author).*')
+    return lines.join('\n')
+  }
+  
+  let startIndex = 0
+  if (cursor) {
+    const parsed = parseInt(cursor, 10)
+    if (!isNaN(parsed) && parsed >= 0) {
+      startIndex = parsed
+    }
+  }
+  
+  const slicedReplies = replies.slice(startIndex, startIndex + limit)
+  
+  for (const post of slicedReplies) {
+    lines.push(hr())
+    lines.push(renderPostBlock(post))
+    lines.push('')
+    lines.push(
+      `[View post](${baseUrl}${apiPostUrl(post.author.handle, post.rkey)}) · [View thread](${baseUrl}${apiThreadUrl(post.author.handle, post.rkey)}) · [View on Bluesky](${bskyPostUrl(post.author.handle, post.rkey)})`,
+    )
+  }
+  
+  lines.push(hr())
+  
+  const nextIndex = startIndex + limit
+  if (nextIndex < replies.length) {
+    lines.push(`[Next page →](${baseUrl}/profile/${handle}/post/${rkey}/replies?cursor=${nextIndex}&limit=${limit})`)
+  } else {
+    lines.push('*End of replies.*')
   }
   
   return lines.join('\n')

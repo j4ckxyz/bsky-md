@@ -13,6 +13,7 @@ const TEST_CASES = [
   { path: '/profile/j4ck.xyz/post/3mmkleuz4xc2f/thread', expectedStatus: 200 },
   { path: '/profile/j4ck.xyz/post/3mmkleuz4xc2f/quotes', expectedStatus: 200 },
   { path: '/profile/j4ck.xyz/post/3mmkleuz4xc2f/also-liked', expectedStatus: 200 },
+  { path: '/profile/j4ck.xyz/post/3mmkleuz4xc2f/replies', expectedStatus: 200 },
   { path: '/profile/bsky.app/activity', expectedStatus: 200 },
   { path: '/profile/bsky.app/feed/whats-hot', expectedStatus: 200 },
   { path: '/profile/bsky.app/followers', expectedStatus: 200 },

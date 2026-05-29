@@ -387,6 +387,48 @@ export async function getThread(handle: string, rkey: string, full = false): Pro
   return { root: rootPost, replies }
 }
 
+export async function getReplies(
+  handle: string,
+  rkey: string,
+): Promise<{ root: PostData; replies: PostData[] }> {
+  const did = await resolveDid(handle)
+  const uri = `at://${did}/app.bsky.feed.post/${rkey}`
+  const res = await agent.getPostThread({ uri, depth: 6, parentHeight: 0 })
+
+  if (!AppBskyFeedDefs.isThreadViewPost(res.data.thread as unknown)) {
+    throw Object.assign(new Error('Post not found'), { status: 404 })
+  }
+
+  const threadNode = res.data.thread as AppBskyFeedDefs.ThreadViewPost
+  const rootPost = postViewToPostData(threadNode.post)
+  const authorDid = threadNode.post.author.did
+
+  const repliesList: PostData[] = []
+
+  function walk(node: AppBskyFeedDefs.ThreadViewPost) {
+    if (node.replies) {
+      const children = (node.replies as unknown[])
+        .filter(AppBskyFeedDefs.isThreadViewPost)
+        .map((r) => r as AppBskyFeedDefs.ThreadViewPost)
+
+      children.sort(
+        (a, b) => new Date(a.post.indexedAt).getTime() - new Date(b.post.indexedAt).getTime(),
+      )
+
+      for (const reply of children) {
+        if (reply.post.author.did !== authorDid) {
+          repliesList.push(postViewToPostData(reply.post))
+        }
+        walk(reply)
+      }
+    }
+  }
+
+  walk(threadNode)
+
+  return { root: rootPost, replies: repliesList }
+}
+
 export async function getActorLists(
   handle: string,
   cursor?: string,
